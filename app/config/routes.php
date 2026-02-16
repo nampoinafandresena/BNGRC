@@ -32,6 +32,8 @@ $router->group('', function(Router $router) use ($app) {
 
 	$router->group('/don', function() use ($router) {
 		$router->get('/formulaire', [ DonController::class, 'showForm' ]);
+		$router->post('/insert', [ DonController::class, 'insert' ]);
+
 	});
 
 	$router->group('/api', function() use ($router) {
