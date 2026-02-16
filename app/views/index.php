@@ -11,7 +11,9 @@
         </p>
         
         <div class="sim-form">
-            <button class="btn-gold" onclick="simulateDistribution()">Lancer la simulation</button>
+            <button class="btn-gold" onclick="simulateDistribution()">📊 Simuler</button>
+            <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
+            <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
         </div>
 
         <div id="simResult" class="sim-result" style="display: none;">
@@ -83,37 +85,151 @@
 </main>
 
 <script>
+    /*
+     * ========================================================
+     * LOGIQUE DE SIMULATION ET VALIDATION DES DISTRIBUTIONS
+     * ========================================================
+     * 
+     * ANCIEN COMPORTEMENT (COMMENTÉ) :
+     * - Route unique : /dispatch/simulate
+     * - Sauvegardait directement les distributions
+     * - Rafraîchissait la page après 2 secondes automatiquement
+     * Inconvénient : pas de contrôle utilisateur, pas de preview
+     * 
+     * NOUVEAU COMPORTEMENT :
+     * - Deux routes séparées : /dispatch/preview et /dispatch/validate
+     * - /preview : affiche les propositions (sans sauvegarder)
+     * - Utilisateur peut voir le résultat et décider
+     * - Si validation : /validate persiste les données
+     * - Boutons : Simuler, Valider, Annuler
+     * ========================================================
+     */
+    
+    let currentProposals = []; // Stocke les propositions actuelles
+
     function simulateDistribution() {
         const resultBox = document.getElementById('simResult');
         const simContent = document.getElementById('simContent');
+        const validateBtn = document.getElementById('validateBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
         
-        // Afficher un message de chargement
         simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
         resultBox.style.display = 'block';
         
-        // Appeler l'API /dispatch/simulate
-        fetch('/dispatch/simulate')
+        fetch('/dispatch/preview')
             .then(response => response.json())
             .then(data => {
-                let htmlContent = `
-                    <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red);">
-                        <p><strong>✅ Simulation terminée</strong></p>
-                        <p>Dons traités: <strong>${data.dons_traites}</strong></p>
-                        <p>Attributions créées: <strong>${data.attributions_creees}</strong></p>
-                        <p>Quantité totale attribuée: <strong>${data.quantite_totale_attribuee}</strong></p>
-                        ${data.erreurs.length > 0 ? '<p style="color: var(--royal-red);">⚠️ Erreurs: ' + data.erreurs.join(', ') + '</p>' : ''}
+                currentProposals = data.propositions;
+                
+                let statsHtml = `
+                    <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
+                        <p><strong>📊 Propositions de Distribution</strong></p>
+                        <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
+                        <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
+                        <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
                     </div>
                 `;
-                simContent.innerHTML = htmlContent;
-                resultBox.scrollIntoView({ behavior: 'smooth' });
                 
-                // Rafraîchir la page après 2 secondes pour voir les données mises à jour
-                setTimeout(() => {
-                    location.reload();
-                }, 2000);
+                // Afficher le tableau des propositions
+                if (data.propositions.length > 0) {
+                    statsHtml += `
+                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                            <thead>
+                                <tr style="background-color: #f0f8ff;">
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Don</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Quantité</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.propositions.map(prop => `
+                                    <tr>
+                                        <td style="border: 1px solid #ddd; padding: 10px;">#${prop.id_don}</td>
+                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.donateur}</td>
+                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.quantite_attribuee}</td>
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                    `;
+                } else {
+                    statsHtml += '<p style="color: var(--royal-red);">ℹ️ Aucune proposition disponible.</p>';
+                }
+                
+                simContent.innerHTML = statsHtml;
+                validateBtn.style.display = 'inline-block';
+                cancelBtn.style.display = 'inline-block';
+                resultBox.scrollIntoView({ behavior: 'smooth' });
             })
             .catch(error => {
                 simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur lors de la simulation: ' + error.message + '</p>';
             });
+    }
+
+    function validateDistribution() {
+        if (currentProposals.length === 0) {
+            alert('Aucune proposition à valider. Lancez d\'abord une simulation.');
+            return;
+        }
+
+        const validateBtn = document.getElementById('validateBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const simContent = document.getElementById('simContent');
+        
+        simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
+        validateBtn.disabled = true;
+        
+        fetch('/dispatch/validate', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            validateBtn.disabled = false;
+            
+            if (data.success) {
+                let resultHtml = `
+                    <div style="padding: 15px; background: #d4edda; border-radius: 5px; border-left: 4px solid #28a745; margin-bottom: 20px;">
+                        <p><strong style="color: #155724;">✅ Validation réussie!</strong></p>
+                        <p>Attributions créées: <strong>${data.attributions_creees}</strong></p>
+                        <p>Quantité totale attribuée: <strong>${data.quantite_totale_attribuee}</strong></p>
+                    </div>
+                `;
+                simContent.innerHTML = resultHtml;
+                validateBtn.style.display = 'none';
+                cancelBtn.style.display = 'none';
+                currentProposals = [];
+                
+                // Rafraîchir la page après 2 secondes
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                let errorHtml = `
+                    <div style="padding: 15px; background: #f8d7da; border-radius: 5px; border-left: 4px solid var(--royal-red);">
+                        <p><strong style="color: var(--royal-red);">❌ Erreur lors de la validation</strong></p>
+                        <p>${data.erreurs.join('<br>')}</p>
+                    </div>
+                `;
+                simContent.innerHTML = errorHtml;
+            }
+        })
+        .catch(error => {
+            validateBtn.disabled = false;
+            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur lors de la validation: ' + error.message + '</p>';
+        });
+    }
+
+    function cancelSimulation() {
+        const resultBox = document.getElementById('simResult');
+        const validateBtn = document.getElementById('validateBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        resultBox.style.display = 'none';
+        validateBtn.style.display = 'none';
+        cancelBtn.style.display = 'none';
+        currentProposals = [];
     }
 </script>
