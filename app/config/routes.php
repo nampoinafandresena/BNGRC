@@ -3,6 +3,7 @@
 use app\controllers\ApiExampleController;
 use app\controllers\DonController;
 use app\controllers\DashboardController;
+use app\controllers\DispatchController;
 use app\middlewares\SecurityHeadersMiddleware;
 use flight\Engine;
 use flight\net\Router;
@@ -39,6 +40,14 @@ $router->group('', function(Router $router) use ($app) {
 		$router->post('/users/@id:[0-9]', [ ApiExampleController::class, 'updateUser' ]);
 	});
 
-	$router->post('/dispatch/simulate', [ DispatchController::class, 'simulateDispatch' ]);
+	$router->group('/dispatch', function() use ($router) {
+		$router->get('/simulate', function() {
+			$app = Flight::app();
+			$dispatchController = new DispatchController($app);
+			$result = $dispatchController->simulateDispatch();
+			header('Content-Type: application/json');
+			echo json_encode($result);
+		});
+	});
 	
 }, [ SecurityHeadersMiddleware::class ]);
