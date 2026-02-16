@@ -35,11 +35,12 @@ class RecapController {
     }
 
     public function calcVMsatisfiedbesoin() {
-        $allbesoins = BesoinController::getAll();
+        $bc = new BesoinController($this->db);
+        $satisfied = $bc->getBesoinsSatisfaits();
         $total = 0;
-        foreach ($allbesoins as $b) {
+        foreach ($satisfied as $s) {
             $model = new BesoinVille($this->db);
-            $model->read($b['id']);
+            $model->read($s['id']);
             $total += BesoinController::calcValeurMonetaire($model);
         }
         return $total;
@@ -48,10 +49,12 @@ class RecapController {
     public function showRecap() {
         $this->db = Flight::db();
         $total = $this->calcVMallbesoins();
+        $satisfied = $this->calcVMsatisfiedbesoin();
 
         Flight::render('model', [
             'page' => 'recapitulation/recap',
-            'total'=> $total
+            'total'=> $total,
+            'satisfied' => $satisfied
         ]);
     }
 

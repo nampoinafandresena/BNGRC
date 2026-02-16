@@ -20,17 +20,15 @@
             <!-- TOTAL -->
             <div class="panel">
                 <h4>Montant Total des Besoins</h4>
-                <h2 style="font-size:2.5rem;"><?= $total ?>Ar</h2>
+                <h2 style="font-size:2.5rem;"><?= $total ?> Ar</h2>
                 <a href="" class="status-badge critical">Voir les details</a>
                 
             </div>
 
             <!-- DISTRIBUÉ -->
             <div class="panel">
-                <h4>Montant Déjà Distribué</h4>
-                <h2 style="font-size:2.5rem; color:var(--gold);">
-                    7 980 000 000 Ar
-                </h2>
+                <h4>Montant Besoins satisfaits</h4>
+                <h2 style="font-size:2.5rem; color:var(--gold);"><?= $satisfied ?> Ar</h2>
                 <a href="" class="status-badge delivered">Voir les details</a>
             </div>
 

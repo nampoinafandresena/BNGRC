@@ -62,5 +62,19 @@ class BesoinController {
         $list = BesoinVille::readAll($db);
         return $list;
     }
+
+    public function getBesoinsSatisfaits()
+    {
+        $query = $this->db->prepare(
+            "SELECT bv.* 
+             FROM BNGRC_besoin_ville bv
+             where bv.quantite_demandee = COALESCE(
+                (SELECT SUM(quantite_attribuee) FROM BNGRC_distribution WHERE id_besoin_ville = bv.id), 0
+             )
+             ORDER BY bv.date_demande ASC"
+        );
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
 }
 ?>
