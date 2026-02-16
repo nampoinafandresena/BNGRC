@@ -2,6 +2,7 @@
 
 namespace app\controllers;
 
+use flight;
 use flight\Engine;
 use app\models\DonCollecte;
 use app\models\BesoinVille;
@@ -32,7 +33,7 @@ class DispatchController
      *     ];
      *
      *     // 1. Récupérer tous les dons non épuisés, par ordre de date croissante (FIFO)
-     *     $donCollecte = new DonCollecte($this->db);
+     *     $donCollecte = new DonCollecte(Flight::db());
      *     $tousDons = $donCollecte->readAll();
      *     $tousDons = array_reverse($tousDons);
      *
@@ -61,7 +62,7 @@ class DispatchController
      *             $quantiteAAttribuer = min($quantiteDisponible, $quantiteManquante);
      *
      *             // Créer la distribution (sauvegarde directe)
-     *             $distribution = new Distribution($this->db);
+     *             $distribution = new Distribution(Flight::db());
      *             $distribution
      *                 ->setIdDon($don['id'])
      *                 ->setIdBesoinVille($besoin['id'])
@@ -108,7 +109,7 @@ class DispatchController
         ];
 
         // 1. Récupérer tous les dons non épuisés, par ordre de date croissante (FIFO)
-        $donCollecte = new DonCollecte($this->db);
+        $donCollecte = new DonCollecte(Flight::db());
         $tousDons = $donCollecte->readAll();
         $tousDons = array_reverse($tousDons);
 
@@ -135,7 +136,7 @@ class DispatchController
                 $quantiteAAttribuer = min($quantiteDisponible, $quantiteManquante);
 
                 // Créer et sauvegarder la distribution
-                $distribution = new Distribution($this->db);
+                $distribution = new Distribution(Flight::db());
                 $distribution
                     ->setIdDon($don['id'])
                     ->setIdBesoinVille($besoin['id'])
@@ -172,7 +173,7 @@ class DispatchController
         ];
 
         // 1. Récupérer tous les dons non épuisés
-        $donCollecte = new DonCollecte($this->db);
+        $donCollecte = new DonCollecte(Flight::db());
         $tousDons = $donCollecte->readAll();
         $tousDons = array_reverse($tousDons);
 
@@ -229,7 +230,7 @@ class DispatchController
     
     private function getBesoinsNonSatisfaits($idArticle)
     {
-        $query = $this->db->prepare(
+        $query = Flight::db()->prepare(
             "SELECT bv.* 
              FROM BNGRC_besoin_ville bv
              WHERE bv.id_article = :id_article
@@ -245,7 +246,7 @@ class DispatchController
     
     private function getQuantiteDistribuee($idDon)
     {
-        $query = $this->db->prepare(
+        $query = Flight::db()->prepare(
             "SELECT COALESCE(SUM(quantite_attribuee), 0) as total 
              FROM BNGRC_distribution 
              WHERE id_don = :id_don"
@@ -258,7 +259,7 @@ class DispatchController
    
     private function getQuantiteAttribuee($idBesoin)
     {
-        $query = $this->db->prepare(
+        $query = Flight::db()->prepare(
             "SELECT COALESCE(SUM(quantite_attribuee), 0) as total 
              FROM BNGRC_distribution 
              WHERE id_besoin_ville = :id_besoin"
