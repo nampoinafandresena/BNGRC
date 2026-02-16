@@ -2,18 +2,21 @@
 
 namespace app\models;
 
-use flight\ActiveRecord;
+use PDO;
 
-class Distribution extends ActiveRecord
+class Distribution
 {
-    protected static $table = 'BNGRC_distribution';
-    protected static $primaryKey = 'id';
-    
-    private $id;
-    private $id_don;
-    private $id_besoin_ville;
-    private $quantite_attribuee;
-    private $date_attribution;
+    public $db;
+    public $id;
+    public $id_don;
+    public $id_besoin_ville;
+    public $quantite_attribuee;
+    public $date_attribution;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db;
+    }
 
     public function getId()
     {
@@ -70,85 +73,115 @@ class Distribution extends ActiveRecord
         return $this;
     }
 
-    public static function getAll()
+    public function create()
     {
-        return self::find();
-    }
+        $query = $this->db->prepare(
+            "INSERT INTO BNGRC_distribution (id_don, id_besoin_ville, quantite_attribuee) 
+             VALUES (:id_don, :id_besoin_ville, :quantite_attribuee)"
+        );
 
-    public static function getById($id)
-    {
-        return self::findFirst(['id' => $id]);
-    }
-
-    public static function create($id_don, $id_besoin_ville, $quantite_attribuee)
-    {
-        $distribution = new self();
-        $distribution->id_don = $id_don;
-        $distribution->id_besoin_ville = $id_besoin_ville;
-        $distribution->quantite_attribuee = $quantite_attribuee;
-        return $distribution->save();
-    }
-
-    public static function update($id, $id_don, $id_besoin_ville, $quantite_attribuee)
-    {
-        $distribution = self::findFirst(['id' => $id]);
-        if ($distribution) {
-            $distribution->id_don = $id_don;
-            $distribution->id_besoin_ville = $id_besoin_ville;
-            $distribution->quantite_attribuee = $quantite_attribuee;
-            return $distribution->save();
+        if ($query->execute([
+            ':id_don' => $this->id_don,
+            ':id_besoin_ville' => $this->id_besoin_ville,
+            ':quantite_attribuee' => $this->quantite_attribuee
+        ])) {
+            $this->id = $this->db->lastInsertId();
+            return true;
         }
         return false;
     }
 
-    public static function delete($id)
+    public function read($id)
     {
-        $distribution = self::findFirst(['id' => $id]);
-        if ($distribution) {
-            return $distribution->delete();
+        $query = $this->db->prepare("SELECT * FROM BNGRC_distribution WHERE id = :id");
+        $query->execute([':id' => $id]);
+
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id = $data['id'];
+            $this->id_don = $data['id_don'];
+            $this->id_besoin_ville = $data['id_besoin_ville'];
+            $this->quantite_attribuee = $data['quantite_attribuee'];
+            $this->date_attribution = $data['date_attribution'];
+            return $this;
         }
-        return false;
+        return null;
+    }
+
+    public function readAll()
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_distribution ORDER BY date_attribution DESC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function readByDon($id_don)
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_distribution WHERE id_don = :id_don ORDER BY date_attribution DESC");
+        $query->execute([':id_don' => $id_don]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function readByBesoinVille($id_besoin_ville)
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_distribution WHERE id_besoin_ville = :id_besoin_ville ORDER BY date_attribution DESC");
+        $query->execute([':id_besoin_ville' => $id_besoin_ville]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update()
+    {
+        $query = $this->db->prepare(
+            "UPDATE BNGRC_distribution SET id_don = :id_don, id_besoin_ville = :id_besoin_ville, quantite_attribuee = :quantite_attribuee WHERE id = :id"
+        );
+
+        return $query->execute([
+            ':id' => $this->id,
+            ':id_don' => $this->id_don,
+            ':id_besoin_ville' => $this->id_besoin_ville,
+            ':quantite_attribuee' => $this->quantite_attribuee
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = $this->db->prepare("DELETE FROM BNGRC_distribution WHERE id = :id");
+        return $query->execute([':id' => $id]);
     }
 
     public function getDon()
     {
-        return DonCollecte::findFirst(['id' => $this->id_don]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_don_collecte WHERE id = :id");
+        $query->execute([':id' => $this->id_don]);
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getBesoinVille()
     {
-        return BesoinVille::findFirst(['id' => $this->id_besoin_ville]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville WHERE id = :id");
+        $query->execute([':id' => $this->id_besoin_ville]);
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
-    public static function getByDon($id_don)
+    public function readByVille($id_ville)
     {
-        return self::find(['id_don' => $id_don]);
+        $query = $this->db->prepare(
+            "SELECT d.* FROM BNGRC_distribution d
+             INNER JOIN BNGRC_besoin_ville bv ON d.id_besoin_ville = bv.id
+             WHERE bv.id_ville = :id_ville ORDER BY d.date_attribution DESC"
+        );
+        $query->execute([':id_ville' => $id_ville]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
-    public static function getByBesoinVille($id_besoin_ville)
+    public function readByArticle($id_article)
     {
-        return self::find(['id_besoin_ville' => $id_besoin_ville]);
-    }
-
-    public static function getByVille($id_ville)
-    {
-        $besoins = BesoinVille::getByVille($id_ville);
-        $distributions = [];
-        foreach ($besoins as $besoin) {
-            $dists = self::getByBesoinVille($besoin->id);
-            $distributions = array_merge($distributions, $dists);
-        }
-        return $distributions;
-    }
-
-    public static function getByArticle($id_article)
-    {
-        $besoins = BesoinVille::getByArticle($id_article);
-        $distributions = [];
-        foreach ($besoins as $besoin) {
-            $dists = self::getByBesoinVille($besoin->id);
-            $distributions = array_merge($distributions, $dists);
-        }
-        return $distributions;
+        $query = $this->db->prepare(
+            "SELECT d.* FROM BNGRC_distribution d
+             INNER JOIN BNGRC_besoin_ville bv ON d.id_besoin_ville = bv.id
+             WHERE bv.id_article = :id_article ORDER BY d.date_attribution DESC"
+        );
+        $query->execute([':id_article' => $id_article]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }

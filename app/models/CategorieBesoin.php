@@ -2,15 +2,18 @@
 
 namespace app\models;
 
-use flight\ActiveRecord;
+use PDO;
 
-class CategorieBesoin extends ActiveRecord
+class CategorieBesoin
 {
-    protected static $table = 'BNGRC_categorie_besoin';
-    protected static $primaryKey = 'id';
-    
-    private $id;
-    private $label;
+    public $db;
+    public $id;
+    public $label;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db;
+    }
 
     public function getId()
     {
@@ -34,44 +37,62 @@ class CategorieBesoin extends ActiveRecord
         return $this;
     }
 
-    public static function getAll()
+    public function create()
     {
-        return self::find();
-    }
+        $query = $this->db->prepare(
+            "INSERT INTO BNGRC_categorie_besoin (label) VALUES (:label)"
+        );
 
-    public static function getById($id)
-    {
-        return self::findFirst(['id' => $id]);
-    }
-
-    public static function create($label)
-    {
-        $categorie = new self();
-        $categorie->label = $label;
-        return $categorie->save();
-    }
-
-    public static function update($id, $label)
-    {
-        $categorie = self::findFirst(['id' => $id]);
-        if ($categorie) {
-            $categorie->label = $label;
-            return $categorie->save();
+        if ($query->execute([':label' => $this->label])) {
+            $this->id = $this->db->lastInsertId();
+            return true;
         }
         return false;
     }
 
-    public static function delete($id)
+    public function read($id)
     {
-        $categorie = self::findFirst(['id' => $id]);
-        if ($categorie) {
-            return $categorie->delete();
+        $query = $this->db->prepare("SELECT * FROM BNGRC_categorie_besoin WHERE id = :id");
+        $query->execute([':id' => $id]);
+
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id = $data['id'];
+            $this->label = $data['label'];
+            return $this;
         }
-        return false;
+        return null;
+    }
+
+    public function readAll()
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_categorie_besoin ORDER BY label ASC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update()
+    {
+        $query = $this->db->prepare(
+            "UPDATE BNGRC_categorie_besoin SET label = :label WHERE id = :id"
+        );
+
+        return $query->execute([
+            ':id' => $this->id,
+            ':label' => $this->label
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = $this->db->prepare("DELETE FROM BNGRC_categorie_besoin WHERE id = :id");
+        return $query->execute([':id' => $id]);
     }
 
     public function getArticles()
     {
-        return Article::find(['id_categorie' => $this->id]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_article WHERE id_categorie = :id_categorie");
+        $query->execute([':id_categorie' => $this->id]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }

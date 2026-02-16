@@ -2,17 +2,20 @@
 
 namespace app\models;
 
-use flight\ActiveRecord;
+use PDO;
 
-class Article extends ActiveRecord
+class Article
 {
-    protected static $table = 'BNGRC_article';
-    protected static $primaryKey = 'id';
-    
-    private $id;
-    private $id_categorie;
-    private $label;
-    private $prix_unitaire;
+    public $db;
+    public $id;
+    public $id_categorie;
+    public $label;
+    public $prix_unitaire;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db;
+    }
 
     public function getId()
     {
@@ -58,68 +61,93 @@ class Article extends ActiveRecord
         return $this;
     }
 
-    public static function getAll()
+    public function create()
     {
-        return self::find();
-    }
+        $query = $this->db->prepare(
+            "INSERT INTO BNGRC_article (id_categorie, label, prix_unitaire) 
+             VALUES (:id_categorie, :label, :prix_unitaire)"
+        );
 
-    public static function getById($id)
-    {
-        return self::findFirst(['id' => $id]);
-    }
-
-    public static function create($id_categorie, $label, $prix_unitaire = 0)
-    {
-        $article = new self();
-        $article->id_categorie = $id_categorie;
-        $article->label = $label;
-        $article->prix_unitaire = $prix_unitaire;
-        return $article->save();
-    }
-
-    public static function update($id, $id_categorie, $label, $prix_unitaire = 0)
-    {
-        $article = self::findFirst(['id' => $id]);
-        if ($article) {
-            $article->id_categorie = $id_categorie;
-            $article->label = $label;
-            $article->prix_unitaire = $prix_unitaire;
-            return $article->save();
+        if ($query->execute([
+            ':id_categorie' => $this->id_categorie,
+            ':label' => $this->label,
+            ':prix_unitaire' => $this->prix_unitaire
+        ])) {
+            $this->id = $this->db->lastInsertId();
+            return true;
         }
         return false;
     }
 
-    public static function delete($id)
+    public function read($id)
     {
-        $article = self::findFirst(['id' => $id]);
-        if ($article) {
-            return $article->delete();
+        $query = $this->db->prepare("SELECT * FROM BNGRC_article WHERE id = :id");
+        $query->execute([':id' => $id]);
+
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id = $data['id'];
+            $this->id_categorie = $data['id_categorie'];
+            $this->label = $data['label'];
+            $this->prix_unitaire = $data['prix_unitaire'];
+            return $this;
         }
-        return false;
+        return null;
+    }
+
+    public function readAll()
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_article ORDER BY label ASC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function readByCategorie($id_categorie)
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_article WHERE id_categorie = :id_categorie ORDER BY label ASC");
+        $query->execute([':id_categorie' => $id_categorie]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update()
+    {
+        $query = $this->db->prepare(
+            "UPDATE BNGRC_article SET id_categorie = :id_categorie, label = :label, prix_unitaire = :prix_unitaire WHERE id = :id"
+        );
+
+        return $query->execute([
+            ':id' => $this->id,
+            ':id_categorie' => $this->id_categorie,
+            ':label' => $this->label,
+            ':prix_unitaire' => $this->prix_unitaire
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = $this->db->prepare("DELETE FROM BNGRC_article WHERE id = :id");
+        return $query->execute([':id' => $id]);
     }
 
     public function getCategorie()
     {
-        return CategorieBesoin::findFirst(['id' => $this->id_categorie]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_categorie_besoin WHERE id = :id");
+        $query->execute([':id' => $this->id_categorie]);
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getDons()
     {
-        return DonCollecte::find(['id_article' => $this->id]);
-    }
-
-    public static function getByCategorie($id_categorie)
-    {
-        return self::find(['id_categorie' => $id_categorie]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_don_collecte WHERE id_article = :id_article");
+        $query->execute([':id_article' => $this->id]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getTotalCollected()
     {
-        $dons = $this->getDons();
-        $total = 0;
-        foreach ($dons as $don) {
-            $total += $don->quantite_recue;
-        }
-        return $total;
+        $query = $this->db->prepare("SELECT SUM(quantite_recue) as total FROM BNGRC_don_collecte WHERE id_article = :id_article");
+        $query->execute([':id_article' => $this->id]);
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
     }
 }
