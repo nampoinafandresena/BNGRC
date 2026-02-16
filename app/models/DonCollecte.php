@@ -175,4 +175,20 @@ class DonCollecte
     {
         return $this->quantite_recue - $this->getQuantiteDistribuee();
     }
+
+
+    public function getQuantiteRestante($id_don)
+    {
+        // Quantité reçue - somme attribuée
+        $query = $this->db->prepare(
+            "SELECT 
+                dc.quantite_recue - COALESCE(SUM(d.quantite_attribuee), 0) as reste
+            FROM BNGRC_don_collecte dc
+            LEFT JOIN BNGRC_distribution d ON dc.id = d.id_don
+            WHERE dc.id = :id_don
+            GROUP BY dc.id"
+        );
+        $query->execute([':id_don' => $id_don]);
+        return $query->fetch(PDO::FETCH_ASSOC)['reste'];
+    }
 }

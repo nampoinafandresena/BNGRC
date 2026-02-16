@@ -204,4 +204,20 @@ class BesoinVille
         $stmt->execute();
         return $stmt->fetchAll(PDO::FETCH_ASSOC);
     }
+
+    
+    public function getQuantiteRestante($id_besoin)
+    {
+        // Quantité demandée - somme attribuée
+        $query = $this->db->prepare(
+            "SELECT 
+                bv.quantite_demandee - COALESCE(SUM(d.quantite_attribuee), 0) as reste
+            FROM BNGRC_besoin_ville bv
+            LEFT JOIN BNGRC_distribution d ON bv.id = d.id_besoin_ville
+            WHERE bv.id = :id_besoin
+            GROUP BY bv.id"
+        );
+        $query->execute([':id_besoin' => $id_besoin]);
+        return $query->fetch(PDO::FETCH_ASSOC)['reste'];
+    }
 }
