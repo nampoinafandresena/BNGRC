@@ -28,5 +28,9 @@ class DonController {
         ]);
     }
 
+    public static function insert() {
+        
+    }
+
 }
 ?>

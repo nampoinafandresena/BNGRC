@@ -95,9 +95,9 @@ class Article
         return null;
     }
 
-    public function readAll()
+    public static function readAll($db)
     {
-        $query = $this->db->prepare("SELECT * FROM BNGRC_article ORDER BY label ASC");
+        $query = $db->prepare("SELECT * FROM BNGRC_article ORDER BY label ASC");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
