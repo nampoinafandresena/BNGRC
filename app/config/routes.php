@@ -2,6 +2,7 @@
 
 use app\controllers\ApiExampleController;
 use app\controllers\BesoinController;
+use app\controllers\RecapController;
 use app\controllers\DonController;
 use app\controllers\DashboardController;
 use app\controllers\DispatchController;
@@ -41,6 +42,10 @@ $router->group('', function(Router $router) use ($app) {
 		$router->get('/formulaire', [ BesoinController::class, 'showForm' ]);
 		$router->post('/insert', [ BesoinController::class, 'insert' ]);
 
+	});
+
+	$router->group('/recap', function() use ($router) {
+		$router->get('/', [ RecapController::class, 'showRecap' ]);
 	});
 
 	$router->group('/api', function() use ($router) {

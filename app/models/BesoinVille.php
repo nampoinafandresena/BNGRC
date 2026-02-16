@@ -108,9 +108,9 @@ class BesoinVille
         return null;
     }
 
-    public function readAll()
+    public static function readAll($db)
     {
-        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville ORDER BY date_demande DESC");
+        $query = $db->prepare("SELECT * FROM BNGRC_besoin_ville ORDER BY date_demande DESC");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
@@ -219,5 +219,11 @@ class BesoinVille
         );
         $query->execute([':id_besoin' => $id_besoin]);
         return $query->fetch(PDO::FETCH_ASSOC)['reste'];
+    }
+
+    public function getPrixUnitaire() {
+        $query = $this->db->prepare("SELECT prix_unitaire FROM BNGRC_article WHERE id = :id_article");
+        $query->execute([':id_article' => $this->id_article]);
+        return $query->fetch(PDO::FETCH_ASSOC)['prix_unitaire'];
     }
 }
