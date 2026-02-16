@@ -7,34 +7,16 @@
     <div class="donation-sim-box">
         <h3 style="color: var(--royal-red); margin-bottom: 20px;">Simulateur de Distribution d'Aide</h3>
         <p style="margin-bottom: 30px; font-size: 0.95rem;">
-            Calculez automatiquement la répartition idéale d'un don en fonction des besoins actuels.
+            Lancez la simulation automatique pour redistribuer les dons selon les besoins et l'ordre chronologique.
         </p>
         
         <div class="sim-form">
-            <select class="sim-input" id="donType">
-                <option value="Riz">Riz (Sacs 50kg)</option>
-                <option value="Eau">Eau Potable (Litre)</option>
-                <option value="Argent">Fonds (Ariary)</option>
-                <option value="Tôles">Matériaux (Tôles)</option>
-            </select>
-            <input type="number" class="sim-input" id="donQty" placeholder="Quantité Totale">
             <button class="btn-gold" onclick="simulateDistribution()">Lancer la simulation</button>
         </div>
 
-        <div id="simResult" class="sim-result">
-            <h4 style="margin-bottom: 15px;">Proposition de Répartition Intelligente :</h4>
-            <table id="simTable">
-                <thead>
-                    <tr>
-                        <th>Ville Cible</th>
-                        <th>Besoin Actuel</th>
-                        <th>Quantité Allouée</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody id="simBody">
-                    </tbody>
-            </table>
+        <div id="simResult" class="sim-result" style="display: none;">
+            <h4 style="margin-bottom: 15px;">Résultats de la Simulation :</h4>
+            <div id="simContent"></div>
         </div>
     </div>
 
@@ -101,42 +83,37 @@
 </main>
 
 <script>
-    // On récupère les données PHP pour le JS de simulation
-    const cityNeeds = <?= json_encode($stats) ?>;
-
     function simulateDistribution() {
-        const qty = parseInt(document.getElementById('donQty').value);
-        const typeLabel = document.getElementById('donType').value;
         const resultBox = document.getElementById('simResult');
-        const tableBody = document.getElementById('simBody');
-
-        if (!qty || qty <= 0) { alert("Entrez une quantité"); return; }
-
-        // On filtre les besoins qui correspondent au type sélectionné et qui ont un reste > 0
-        let targets = cityNeeds.filter(item => 
-            item.article_label.includes(typeLabel) && item.reste > 0
-        );
-
-        let totalReste = targets.reduce((sum, item) => sum + parseFloat(item.reste), 0);
-        let htmlContent = "";
-
-        targets.forEach(city => {
-            // Répartition au prorata du besoin restant
-            let allocated = Math.min(city.reste, Math.round((city.reste / totalReste) * qty));
-            
-            if (allocated > 0) {
-                htmlContent += `
-                    <tr>
-                        <td><strong>${city.ville_nom}</strong></td>
-                        <td>${city.reste} unité(s)</td>
-                        <td style="color: var(--royal-red); font-weight: bold;">${allocated} ${typeLabel}</td>
-                        <td><button class="status-badge delivered" style="border:none; cursor:pointer;">Appliquer</button></td>
-                    </tr>`;
-            }
-        });
-
-        tableBody.innerHTML = htmlContent || "<tr><td colspan='4'>Aucun besoin critique pour cet article.</td></tr>";
-        resultBox.style.display = "block";
-        resultBox.scrollIntoView({ behavior: 'smooth' });
+        const simContent = document.getElementById('simContent');
+        
+        // Afficher un message de chargement
+        simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
+        resultBox.style.display = 'block';
+        
+        // Appeler l'API /dispatch/simulate
+        fetch('/dispatch/simulate')
+            .then(response => response.json())
+            .then(data => {
+                let htmlContent = `
+                    <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red);">
+                        <p><strong>✅ Simulation terminée</strong></p>
+                        <p>Dons traités: <strong>${data.dons_traites}</strong></p>
+                        <p>Attributions créées: <strong>${data.attributions_creees}</strong></p>
+                        <p>Quantité totale attribuée: <strong>${data.quantite_totale_attribuee}</strong></p>
+                        ${data.erreurs.length > 0 ? '<p style="color: var(--royal-red);">⚠️ Erreurs: ' + data.erreurs.join(', ') + '</p>' : ''}
+                    </div>
+                `;
+                simContent.innerHTML = htmlContent;
+                resultBox.scrollIntoView({ behavior: 'smooth' });
+                
+                // Rafraîchir la page après 2 secondes pour voir les données mises à jour
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            })
+            .catch(error => {
+                simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur lors de la simulation: ' + error.message + '</p>';
+            });
     }
 </script>
