@@ -1,6 +1,7 @@
 <?php
 
 use app\controllers\ApiExampleController;
+use app\controllers\BesoinController;
 use app\controllers\DonController;
 use app\controllers\DashboardController;
 use app\controllers\DispatchController;
@@ -33,6 +34,12 @@ $router->group('', function(Router $router) use ($app) {
 	$router->group('/don', function() use ($router) {
 		$router->get('/formulaire', [ DonController::class, 'showForm' ]);
 		$router->post('/insert', [ DonController::class, 'insert' ]);
+
+	});
+
+	$router->group('/besoin', function() use ($router) {
+		$router->get('/formulaire', [ BesoinController::class, 'showForm' ]);
+		$router->post('/insert', [ BesoinController::class, 'insert' ]);
 
 	});
 
