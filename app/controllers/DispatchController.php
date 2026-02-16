@@ -9,20 +9,99 @@ use app\models\Distribution;
 
 class DispatchController
 {
-    protected Engine $app;
-    protected $db;
 
-    public function __construct($app)
+    /*
+     * ============================================
+     * ANCIENNES FONCTIONNALITÉS 
+     * ============================================
+     * 
+     * L'ancienne méthode simulateDispatch() sauvegardait directement les distributions.
+     * Elle a été refactorisée en deux méthodes séparées :
+     * - simulateDispatchPreview() : retourne les propositions SANS sauvegarder
+     * - validateDispatch() : persiste vraiment les distributions
+     * 
+     * Voici l'ancienne implémentation pour référence :
+     *
+     * public function simulateDispatch()
+     * {
+     *     $resumeDispatch = [
+     *         'dons_traites' => 0,
+     *         'attributions_creees' => 0,
+     *         'quantite_totale_attribuee' => 0,
+     *         'erreurs' => []
+     *     ];
+     *
+     *     // 1. Récupérer tous les dons non épuisés, par ordre de date croissante (FIFO)
+     *     $donCollecte = new DonCollecte($this->db);
+     *     $tousDons = $donCollecte->readAll();
+     *     $tousDons = array_reverse($tousDons);
+     *
+     *     // 2. Pour chaque don
+     *     foreach ($tousDons as $don) {
+     *         $idArticle = $don['id_article'];
+     *         $quantiteDisponible = $don['quantite_recue'] - $this->getQuantiteDistribuee($don['id']);
+     *
+     *         if ($quantiteDisponible <= 0) {
+     *             continue;
+     *         }
+     *
+     *         $resumeDispatch['dons_traites']++;
+     *
+     *         // 3. Chercher les besoins du même article
+     *         $besoinsArticle = $this->getBesoinsNonSatisfaits($idArticle);
+     *
+     *         // 4. Attribuer le don en boucle jusqu'à épuisement
+     *         foreach ($besoinsArticle as $besoin) {
+     *             $quantiteManquante = $besoin['quantite_demandee'] - $this->getQuantiteAttribuee($besoin['id']);
+     *
+     *             if ($quantiteManquante <= 0) {
+     *                 continue;
+     *             }
+     *
+     *             $quantiteAAttribuer = min($quantiteDisponible, $quantiteManquante);
+     *
+     *             // Créer la distribution (sauvegarde directe)
+     *             $distribution = new Distribution($this->db);
+     *             $distribution
+     *                 ->setIdDon($don['id'])
+     *                 ->setIdBesoinVille($besoin['id'])
+     *                 ->setQuantiteAttribuee($quantiteAAttribuer);
+     *
+     *             if ($distribution->create()) {
+     *                 $resumeDispatch['attributions_creees']++;
+     *                 $resumeDispatch['quantite_totale_attribuee'] += $quantiteAAttribuer;
+     *                 $quantiteDisponible -= $quantiteAAttribuer;
+     *
+     *                 if ($quantiteDisponible <= 0) {
+     *                     break;
+     *                 }
+     *             } else {
+     *                 $resumeDispatch['erreurs'][] = "Erreur lors de la création...";
+     *             }
+     *         }
+     *     }
+     *
+     *     return $resumeDispatch;
+     * }
+     * ============================================
+     */
+
+    
+    /**
+     * Simule et retourne les distributions proposées SANS les sauvegarder (Preview)
+     */
+    public function simulateDispatchPreview()
     {
-        $this->app = $app;
-        $this->db = $app->db();
+        return $this->getProposedDistributions();
     }
 
-   
-    public function simulateDispatch()
+    /**
+     * Valide et sauvegarde les distributions proposées (Persist)
+     */
+    public function validateDispatch()
     {
-        $resumeDispatch = [
-            'dons_traites' => 0,
+        $result = [
+            'success' => false,
             'attributions_creees' => 0,
             'quantite_totale_attribuee' => 0,
             'erreurs' => []
@@ -30,40 +109,32 @@ class DispatchController
 
         // 1. Récupérer tous les dons non épuisés, par ordre de date croissante (FIFO)
         $donCollecte = new DonCollecte($this->db);
-        $tousDons = $donCollecte->readAll(); // Cette méthode retourne par date DESC, on va inverser
-
-        // Inverser pour avoir l'ordre croissant (plus ancien en premier)
+        $tousDons = $donCollecte->readAll();
         $tousDons = array_reverse($tousDons);
 
-        // 2. Pour chaque don
+        // 2. Pour chaque don, créer et sauvegarder les distributions
         foreach ($tousDons as $don) {
             $idArticle = $don['id_article'];
             $quantiteDisponible = $don['quantite_recue'] - $this->getQuantiteDistribuee($don['id']);
 
-            // Si le don est déjà complètement distribué, passer au suivant
             if ($quantiteDisponible <= 0) {
                 continue;
             }
 
-            $resumeDispatch['dons_traites']++;
-
-            // 3. Chercher les besoins du même article (ordre date croissante)
+            // 3. Chercher les besoins du même article
             $besoinsArticle = $this->getBesoinsNonSatisfaits($idArticle);
 
             // 4. Attribuer le don en boucle jusqu'à épuisement
             foreach ($besoinsArticle as $besoin) {
-                // Quantité manquante pour ce besoin
                 $quantiteManquante = $besoin['quantite_demandee'] - $this->getQuantiteAttribuee($besoin['id']);
 
                 if ($quantiteManquante <= 0) {
-                    // Ce besoin est déjà satisfait
                     continue;
                 }
 
-                // Quantité à attribuer = minimum entre ce qu'il reste du don et ce qui manque au besoin
                 $quantiteAAttribuer = min($quantiteDisponible, $quantiteManquante);
 
-                // Créer la distribution
+                // Créer et sauvegarder la distribution
                 $distribution = new Distribution($this->db);
                 $distribution
                     ->setIdDon($don['id'])
@@ -71,21 +142,88 @@ class DispatchController
                     ->setQuantiteAttribuee($quantiteAAttribuer);
 
                 if ($distribution->create()) {
-                    $resumeDispatch['attributions_creees']++;
-                    $resumeDispatch['quantite_totale_attribuee'] += $quantiteAAttribuer;
+                    $result['attributions_creees']++;
+                    $result['quantite_totale_attribuee'] += $quantiteAAttribuer;
                     $quantiteDisponible -= $quantiteAAttribuer;
 
-                    // Si le don est épuisé, passer au don suivant
                     if ($quantiteDisponible <= 0) {
                         break;
                     }
                 } else {
-                    $resumeDispatch['erreurs'][] = "Erreur lors de la création de la distribution pour le don #{$don['id']} et le besoin #{$besoin['id']}";
+                    $result['erreurs'][] = "Erreur lors de la création de la distribution pour le don #{$don['id']} et le besoin #{$besoin['id']}";
                 }
             }
         }
 
-        return $resumeDispatch;
+        $result['success'] = count($result['erreurs']) === 0;
+        return $result;
+    }
+
+    /**
+     * Calcule les distributions proposées SANS les sauvegarder
+     */
+    private function getProposedDistributions()
+    {
+        $propositions = [];
+        $stats = [
+            'dons_traites' => 0,
+            'attributions_proposees' => 0,
+            'quantite_totale_proposee' => 0
+        ];
+
+        // 1. Récupérer tous les dons non épuisés
+        $donCollecte = new DonCollecte($this->db);
+        $tousDons = $donCollecte->readAll();
+        $tousDons = array_reverse($tousDons);
+
+        // 2. Pour chaque don, proposer des attributions (SANS sauvegarder)
+        foreach ($tousDons as $don) {
+            $idArticle = $don['id_article'];
+            $quantiteDisponible = $don['quantite_recue'] - $this->getQuantiteDistribuee($don['id']);
+
+            if ($quantiteDisponible <= 0) {
+                continue;
+            }
+
+            $stats['dons_traites']++;
+
+            // 3. Chercher les besoins du même article
+            $besoinsArticle = $this->getBesoinsNonSatisfaits($idArticle);
+
+            // 4. Proposer l'attribution du don en boucle
+            foreach ($besoinsArticle as $besoin) {
+                $quantiteManquante = $besoin['quantite_demandee'] - $this->getQuantiteAttribuee($besoin['id']);
+
+                if ($quantiteManquante <= 0) {
+                    continue;
+                }
+
+                $quantiteAAttribuer = min($quantiteDisponible, $quantiteManquante);
+
+                // Ajouter la proposition (sans sauvegarder)
+                $propositions[] = [
+                    'id_don' => $don['id'],
+                    'id_article' => $idArticle,
+                    'id_besoin_ville' => $besoin['id'],
+                    'quantite_attribuee' => $quantiteAAttribuer,
+                    'donateur' => $don['donateur'],
+                    'ville_id' => $besoin['id_ville']
+                ];
+
+                $stats['attributions_proposees']++;
+                $stats['quantite_totale_proposee'] += $quantiteAAttribuer;
+                $quantiteDisponible -= $quantiteAAttribuer;
+
+                if ($quantiteDisponible <= 0) {
+                    break;
+                }
+            }
+        }
+
+        return [
+            'propositions' => $propositions,
+            'stats' => $stats
+        ];
     }
 
     

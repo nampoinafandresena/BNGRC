@@ -49,11 +49,29 @@ $router->group('', function(Router $router) use ($app) {
 		$router->post('/users/@id:[0-9]', [ ApiExampleController::class, 'updateUser' ]);
 	});
 
+	/*
+	 * =====================================================
+	 * ROUTES DISPATCH - SIMULATION ET VALIDATION
+	 * =====================================================
+	 * Anciennement : GET /dispatch/simulate (sauvegardait directement)
+	 * Nouvelle API séparée en deux routes :
+	 * - GET /dispatch/preview : retourne les propositions SANS sauvegarder
+	 * - POST /dispatch/validate : persiste les distributions
+	 * =====================================================
+	 */
 	$router->group('/dispatch', function() use ($router) {
-		$router->get('/simulate', function() {
+		$router->get('/preview', function() {
 			$app = Flight::app();
 			$dispatchController = new DispatchController($app);
-			$result = $dispatchController->simulateDispatch();
+			$result = $dispatchController->simulateDispatchPreview();
+			header('Content-Type: application/json');
+			echo json_encode($result);
+		});
+
+		$router->post('/validate', function() {
+			$app = Flight::app();
+			$dispatchController = new DispatchController($app);
+			$result = $dispatchController->validateDispatch();
 			header('Content-Type: application/json');
 			echo json_encode($result);
 		});
