@@ -49,6 +49,7 @@ define('PROJECT_ROOT', __DIR__ . '/../..');
 $app->path(PROJECT_ROOT);
 
 // Core config variables
+// $app->set('flight.base_url', '/ETU004025/BNGRC',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
 $app->set('flight.base_url', '/',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
 $app->set('flight.case_sensitive', false);    // Set true for case sensitive routes. Default: false
 $app->set('flight.log_errors', true);         // Log errors to file. Recommended: true in production
@@ -78,13 +79,16 @@ return [
 		'dbname'   => 'BNGRC',   // Database name (e.g., 'flightphp')
 		'user'     => 'root',  // Database user (e.g., 'root')
 		'password' => '',  // Database password (never commit real passwords)
-
-		// SQLite Example:
-		// 'file_path' => __DIR__ . $ds . '..' . $ds . 'database.sqlite', // Path to SQLite file
-
-		//Postgres Example
 		
 	],
+
+	// 'database' => [
+	// 	'host'     => '172.16.7.108',      // Database host (e.g., 'localhost', 'db.example.com')
+	// 	'dbname'   => 'BNGRC',   // Database name (e.g., 'flightphp')
+	// 	'user'     => 'ETU004025',  // Database user (e.g., 'root')
+	// 	'password' => 'L1KjQvJE',  // Database password (never commit real passwords)
+		
+	// ],
 
 	/**************************************
 	 *        Runway Settings             *
