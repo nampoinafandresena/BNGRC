@@ -1,6 +1,7 @@
 <?php
 
 use app\controllers\ApiExampleController;
+use app\controllers\DonController;
 use app\middlewares\SecurityHeadersMiddleware;
 use flight\Engine;
 use flight\net\Router;
@@ -14,11 +15,15 @@ use flight\net\Router;
 $router->group('', function(Router $router) use ($app) {
 
 	$router->get('/', function() use ($app) {
-		$app->render('modele', [ 'page' => 'index' ]);
+		$app->render('model', [ 'page' => 'index' ]);
 	});
 
 	$router->get('/hello-world/@name', function($name) {
 		echo '<h1>Hello world! Oh hey '.$name.'!</h1>';
+	});
+
+	$router->group('/don', function() use ($router) {
+		$router->get('/formulaire', [ DonController::class, 'showForm' ]);
 	});
 
 	$router->group('/api', function() use ($router) {
