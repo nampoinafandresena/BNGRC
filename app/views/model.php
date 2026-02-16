@@ -13,7 +13,7 @@
 
   <header>
       <div class="brand">
-          <img src="<?= BASE_URL ?>/assets/images/armoirie.png" alt="logo" class="me-2" style="height:44px;">
+          <img src="<?= BASE_URL ?>assets/images/armoirie.png" alt="logo" class="me-2" style="height:44px;">
           <div class="brand-text">
               <h1>BNGRC</h1>
               <p>Repoblikan'i Madagasikara</p>
@@ -21,9 +21,9 @@
       </div>
       <nav>
           <ul>
-            <li><a href="<?= BASE_URL ?>/">Dashboard</a></li>
-            <li><a href="<?= BASE_URL ?>/don/formulaire">Saisie de Don</a></li>
-            <li><a href="<?= BASE_URL ?>/besoin/formulaire">Formuler un besoin</a></li>
+            <li><a href="<?= BASE_URL ?>">Dashboard</a></li>
+            <li><a href="<?= BASE_URL ?>don/formulaire">Saisie de Don</a></li>
+            <li><a href="<?= BASE_URL ?>besoin/formulaire">Formuler un besoin</a></li>
             <li><a href="login.html">Déconnexion</a></li>
           </ul>
       </nav>
