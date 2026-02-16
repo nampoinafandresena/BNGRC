@@ -38,5 +38,7 @@ $router->group('', function(Router $router) use ($app) {
 		$router->get('/users/@id:[0-9]', [ ApiExampleController::class, 'getUser' ]);
 		$router->post('/users/@id:[0-9]', [ ApiExampleController::class, 'updateUser' ]);
 	});
+
+	$router->post('/dispatch/simulate', [ DispatchController::class, 'simulateDispatch' ]);
 	
 }, [ SecurityHeadersMiddleware::class ]);
