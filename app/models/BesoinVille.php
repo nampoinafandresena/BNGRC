@@ -2,18 +2,21 @@
 
 namespace app\models;
 
-use flight\ActiveRecord;
+use PDO;
 
-class BesoinVille extends ActiveRecord
+class BesoinVille
 {
-    protected static $table = 'BNGRC_besoin_ville';
-    protected static $primaryKey = 'id';
-    
-    private $id;
-    private $id_ville;
-    private $id_article;
-    private $quantite_demandee;
-    private $date_demande;
+    public $db;
+    public $id;
+    public $id_ville;
+    public $id_article;
+    public $quantite_demandee;
+    public $date_demande;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db;
+    }
 
     public function getId()
     {
@@ -70,79 +73,109 @@ class BesoinVille extends ActiveRecord
         return $this;
     }
 
-    public static function getAll()
+    public function create()
     {
-        return self::find();
-    }
+        $query = $this->db->prepare(
+            "INSERT INTO BNGRC_besoin_ville (id_ville, id_article, quantite_demandee) 
+             VALUES (:id_ville, :id_article, :quantite_demandee)"
+        );
 
-    public static function getById($id)
-    {
-        return self::findFirst(['id' => $id]);
-    }
-
-    public static function create($id_ville, $id_article, $quantite_demandee)
-    {
-        $besoin = new self();
-        $besoin->id_ville = $id_ville;
-        $besoin->id_article = $id_article;
-        $besoin->quantite_demandee = $quantite_demandee;
-        return $besoin->save();
-    }
-
-    public static function update($id, $id_ville, $id_article, $quantite_demandee)
-    {
-        $besoin = self::findFirst(['id' => $id]);
-        if ($besoin) {
-            $besoin->id_ville = $id_ville;
-            $besoin->id_article = $id_article;
-            $besoin->quantite_demandee = $quantite_demandee;
-            return $besoin->save();
+        if ($query->execute([
+            ':id_ville' => $this->id_ville,
+            ':id_article' => $this->id_article,
+            ':quantite_demandee' => $this->quantite_demandee
+        ])) {
+            $this->id = $this->db->lastInsertId();
+            return true;
         }
         return false;
     }
 
-    public static function delete($id)
+    public function read($id)
     {
-        $besoin = self::findFirst(['id' => $id]);
-        if ($besoin) {
-            return $besoin->delete();
+        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville WHERE id = :id");
+        $query->execute([':id' => $id]);
+
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id = $data['id'];
+            $this->id_ville = $data['id_ville'];
+            $this->id_article = $data['id_article'];
+            $this->quantite_demandee = $data['quantite_demandee'];
+            $this->date_demande = $data['date_demande'];
+            return $this;
         }
-        return false;
+        return null;
+    }
+
+    public function readAll()
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville ORDER BY date_demande DESC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function readByVille($id_ville)
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville WHERE id_ville = :id_ville ORDER BY date_demande DESC");
+        $query->execute([':id_ville' => $id_ville]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function readByArticle($id_article)
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_besoin_ville WHERE id_article = :id_article ORDER BY date_demande DESC");
+        $query->execute([':id_article' => $id_article]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update()
+    {
+        $query = $this->db->prepare(
+            "UPDATE BNGRC_besoin_ville SET id_ville = :id_ville, id_article = :id_article, quantite_demandee = :quantite_demandee WHERE id = :id"
+        );
+
+        return $query->execute([
+            ':id' => $this->id,
+            ':id_ville' => $this->id_ville,
+            ':id_article' => $this->id_article,
+            ':quantite_demandee' => $this->quantite_demandee
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = $this->db->prepare("DELETE FROM BNGRC_besoin_ville WHERE id = :id");
+        return $query->execute([':id' => $id]);
     }
 
     public function getVille()
     {
-        return Ville::findFirst(['id' => $this->id_ville]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_ville WHERE id = :id");
+        $query->execute([':id' => $this->id_ville]);
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getArticle()
     {
-        return Article::findFirst(['id' => $this->id_article]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_article WHERE id = :id");
+        $query->execute([':id' => $this->id_article]);
+        return $query->fetch(PDO::FETCH_ASSOC);
     }
 
     public function getDistributions()
     {
-        return Distribution::find(['id_besoin_ville' => $this->id]);
-    }
-
-    public static function getByVille($id_ville)
-    {
-        return self::find(['id_ville' => $id_ville]);
-    }
-
-    public static function getByArticle($id_article)
-    {
-        return self::find(['id_article' => $id_article]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_distribution WHERE id_besoin_ville = :id_besoin_ville");
+        $query->execute([':id_besoin_ville' => $this->id]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 
     public function getQuantiteDistribuee()
     {
-        $distributions = $this->getDistributions();
-        $total = 0;
-        foreach ($distributions as $dist) {
-            $total += $dist->quantite_attribuee;
-        }
-        return $total;
+        $query = $this->db->prepare("SELECT SUM(quantite_attribuee) as total FROM BNGRC_distribution WHERE id_besoin_ville = :id_besoin_ville");
+        $query->execute([':id_besoin_ville' => $this->id]);
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
     }
 
     public function getResteADistribuer()

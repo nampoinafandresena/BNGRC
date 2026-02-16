@@ -2,15 +2,18 @@
 
 namespace app\models;
 
-use flight\ActiveRecord;
+use PDO;
 
-class Region extends ActiveRecord
+class Region
 {
-    protected static $table = 'BNGRC_region';
-    protected static $primaryKey = 'id';
-    
-    private $id;
-    private $nom;
+    public $db;
+    public $id;
+    public $nom;
+
+    public function __construct($db = null)
+    {
+        $this->db = $db;
+    }
 
     public function getId()
     {
@@ -34,44 +37,62 @@ class Region extends ActiveRecord
         return $this;
     }
 
-    public static function getAll()
+    public function create()
     {
-        return self::find();
-    }
+        $query = $this->db->prepare(
+            "INSERT INTO BNGRC_region (nom) VALUES (:nom)"
+        );
 
-    public static function getById($id)
-    {
-        return self::findFirst(['id' => $id]);
-    }
-
-    public static function create($nom)
-    {
-        $region = new self();
-        $region->nom = $nom;
-        return $region->save();
-    }
-
-    public static function update($id, $nom)
-    {
-        $region = self::findFirst(['id' => $id]);
-        if ($region) {
-            $region->nom = $nom;
-            return $region->save();
+        if ($query->execute([':nom' => $this->nom])) {
+            $this->id = $this->db->lastInsertId();
+            return true;
         }
         return false;
     }
 
-    public static function delete($id)
+    public function read($id)
     {
-        $region = self::findFirst(['id' => $id]);
-        if ($region) {
-            return $region->delete();
+        $query = $this->db->prepare("SELECT * FROM BNGRC_region WHERE id = :id");
+        $query->execute([':id' => $id]);
+
+        $data = $query->fetch(PDO::FETCH_ASSOC);
+        if ($data) {
+            $this->id = $data['id'];
+            $this->nom = $data['nom'];
+            return $this;
         }
-        return false;
+        return null;
+    }
+
+    public function readAll()
+    {
+        $query = $this->db->prepare("SELECT * FROM BNGRC_region ORDER BY nom ASC");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public function update()
+    {
+        $query = $this->db->prepare(
+            "UPDATE BNGRC_region SET nom = :nom WHERE id = :id"
+        );
+
+        return $query->execute([
+            ':id' => $this->id,
+            ':nom' => $this->nom
+        ]);
+    }
+
+    public function delete($id)
+    {
+        $query = $this->db->prepare("DELETE FROM BNGRC_region WHERE id = :id");
+        return $query->execute([':id' => $id]);
     }
 
     public function getVilles()
     {
-        return Ville::find(['id_region' => $this->id]);
+        $query = $this->db->prepare("SELECT * FROM BNGRC_ville WHERE id_region = :id_region ORDER BY nom ASC");
+        $query->execute([':id_region' => $this->id]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
     }
 }
