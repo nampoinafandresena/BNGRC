@@ -12,7 +12,7 @@ INSERT INTO BNGRC_categorie_besoin (label) VALUES ('Nature'), ('Matériaux'), ('
 INSERT INTO BNGRC_article (id_categorie, label, prix_unitaire) VALUES 
 (1, 'Riz (kg)', 3200),
 (1, 'Huile (Litre)', 9500),
-(2, 'Tôle (unité)', 45000),
+(2, 'Tole (unite)', 45000),
 (2, 'Clous (kg)', 8000),
 (3, 'Fonds de secours (Ar)', 1);
 

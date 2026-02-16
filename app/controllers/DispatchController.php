@@ -18,16 +18,7 @@ class DispatchController
         $this->db = $app->db();
     }
 
-    /**
-     * Simule la distribution des dons aux besoins
-     * Logique: 
-     * 1. Récupère tous les dons par ordre de date (FIFO)
-     * 2. Pour chaque don, cherche les besoins du même article
-     * 3. Attribue le don en fonction des besoins, quantité par quantité
-     * 4. Crée les enregistrements de distribution
-     * 
-     * @return array Résumé de la simulation
-     */
+   
     public function simulateDispatch()
     {
         $resumeDispatch = [
@@ -97,13 +88,7 @@ class DispatchController
         return $resumeDispatch;
     }
 
-    /**
-     * Récupère les besoins non satisfaits pour un article
-     * Triés par date_demande croissante (plus ancien en premier, FIFO)
-     * 
-     * @param int $idArticle ID de l'article
-     * @return array Liste des besoins
-     */
+    
     private function getBesoinsNonSatisfaits($idArticle)
     {
         $query = $this->db->prepare(
@@ -119,12 +104,7 @@ class DispatchController
         return $query->fetchAll(\PDO::FETCH_ASSOC);
     }
 
-    /**
-     * Calcule la quantité distribuée pour un don
-     * 
-     * @param int $idDon ID du don
-     * @return float Quantité distribuée
-     */
+    
     private function getQuantiteDistribuee($idDon)
     {
         $query = $this->db->prepare(
@@ -137,12 +117,7 @@ class DispatchController
         return (float) ($result['total'] ?? 0);
     }
 
-    /**
-     * Calcule la quantité attribuée pour un besoin
-     * 
-     * @param int $idBesoin ID du besoin ville
-     * @return float Quantité attribuée
-     */
+   
     private function getQuantiteAttribuee($idBesoin)
     {
         $query = $this->db->prepare(
