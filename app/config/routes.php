@@ -2,6 +2,7 @@
 
 use app\controllers\ApiExampleController;
 use app\controllers\DonController;
+use app\controllers\DashboardController;
 use app\middlewares\SecurityHeadersMiddleware;
 use flight\Engine;
 use flight\net\Router;
@@ -14,8 +15,14 @@ use flight\net\Router;
 // This wraps all routes in the group with the SecurityHeadersMiddleware
 $router->group('', function(Router $router) use ($app) {
 
-	$router->get('/', function() use ($app) {
-		$app->render('model', [ 'page' => 'index' ]);
+	// Before defining routes
+	$dashboardController = new DashboardController($app);
+
+	$router->get('/', function() use ($app, $dashboardController) {
+		$app->render('model', [ 
+			'page' => 'index' ,
+			'stats' => $dashboardController->getEtatGlobalVilles()
+		]);
 	});
 
 	$router->get('/hello-world/@name', function($name) {
