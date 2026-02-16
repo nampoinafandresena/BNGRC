@@ -76,8 +76,8 @@ class BesoinVille
     public function create()
     {
         $query = $this->db->prepare(
-            "INSERT INTO BNGRC_besoin_ville (id_ville, id_article, quantite_demandee) 
-             VALUES (:id_ville, :id_article, :quantite_demandee)"
+            "INSERT INTO BNGRC_besoin_ville (id_ville, id_article, quantite_demandee, date_demande) 
+             VALUES (:id_ville, :id_article, :quantite_demandee, now())"
         );
 
         if ($query->execute([

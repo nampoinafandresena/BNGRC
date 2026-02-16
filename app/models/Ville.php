@@ -80,9 +80,9 @@ class Ville
         return null;
     }
 
-    public function readAll()
+    public static function readAll($db)
     {
-        $query = $this->db->prepare("SELECT * FROM BNGRC_ville ORDER BY nom ASC");
+        $query = $db->prepare("SELECT * FROM BNGRC_ville ORDER BY nom ASC");
         $query->execute();
         return $query->fetchAll(PDO::FETCH_ASSOC);
     }
