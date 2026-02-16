@@ -1,4 +1,5 @@
 .vscode/
+vendor/
 composer.lock
 .vagrant/
 .runway-creds.json
