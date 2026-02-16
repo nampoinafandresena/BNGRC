@@ -221,4 +221,115 @@ class Achat
 
         return $this->create();
     }
+
+    // get tous les achats avec les tous les details 
+    public static function getAllWithDetails($db)
+    {
+        $query = $db->prepare("
+            SELECT a.*, v.nom_ville, art.nom_article 
+            FROM BNGRC_achat a
+            LEFT JOIN BNGRC_ville v ON a.id_ville = v.id
+            LEFT JOIN BNGRC_article art ON a.id_article = art.id
+            ORDER BY a.date_achat DESC
+        ");
+        $query->execute();
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // statistiques des achats
+    public static function getStats($db)
+    {
+        $query = $db->prepare("
+            SELECT 
+                COUNT(*) as total_achats,
+                SUM(quantite) as quantite_totale,
+                SUM(montant_argent_utilise) as montant_total,
+                AVG(montant_argent_utilise / quantite) as prix_moyen_unitaire
+            FROM BNGRC_achat
+        ");
+        $query->execute();
+        return $query->fetch(PDO::FETCH_ASSOC);
+    }
+
+    // get achats par periodes
+    public static function getByPeriode($db, $date_debut, $date_fin)
+    {
+        $query = $db->prepare("
+            SELECT a.*, v.nom_ville, art.nom_article 
+            FROM BNGRC_achat a
+            LEFT JOIN BNGRC_ville v ON a.id_ville = v.id
+            LEFT JOIN BNGRC_article art ON a.id_article = art.id
+            WHERE DATE(a.date_achat) BETWEEN :date_debut AND :date_fin
+            ORDER BY a.date_achat DESC
+        ");
+        $query->execute([
+            ':date_debut' => $date_debut,
+            ':date_fin' => $date_fin
+        ]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function getByArticle($db, $id_article)
+    {
+        $query = $db->prepare("
+            SELECT a.*, v.nom_ville 
+            FROM BNGRC_achat a
+            LEFT JOIN BNGRC_ville v ON a.id_ville = v.id
+            WHERE a.id_article = :id_article
+            ORDER BY a.date_achat DESC
+        ");
+        $query->execute([':id_article' => $id_article]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    public static function getByVille($db, $id_ville)
+    {
+        $query = $db->prepare("
+            SELECT a.*, art.nom_article 
+            FROM BNGRC_achat a
+            LEFT JOIN BNGRC_article art ON a.id_article = art.id
+            WHERE a.id_ville = :id_ville
+            ORDER BY a.date_achat DESC
+        ");
+        $query->execute([':id_ville' => $id_ville]);
+        return $query->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    // Vérifie si un achat peut être modifié/supprimé
+    public function isModifiable()
+    {
+        // Exemple de règle : un achat de plus de 30 jours ne peut pas être modifié
+        $dateAchat = new \DateTime($this->date_achat);
+        $dateLimite = new \DateTime('-30 days');
+        
+        return $dateAchat >= $dateLimite;
+    }
+
+    // Calcule le montant HT d'un achat
+     public function calculerMontantHT($prix_unitaire)
+    {
+        return $this->quantite * $prix_unitaire;
+    }
+
+    public function calculerMontantTTC($prix_unitaire, $frais_pourcentage)
+    {
+        $montant_ht = $this->calculerMontantHT($prix_unitaire);
+        $montant_frais = $montant_ht * $frais_pourcentage;
+        return $montant_ht + $montant_frais;
+    }
+
+    //  Récupère le montant total des achats pour un article
+     
+    public static function getMontantTotalByArticle($db, $id_article)
+    {
+        $query = $db->prepare("
+            SELECT SUM(montant_argent_utilise) as total 
+            FROM BNGRC_achat 
+            WHERE id_article = :id_article
+        ");
+        $query->execute([':id_article' => $id_article]);
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        return $result['total'] ?? 0;
+    }
+
 }

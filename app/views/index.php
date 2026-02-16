@@ -54,6 +54,7 @@
                                 <th>Demandé</th>
                                 <th>Reçu</th>
                                 <th>Reste</th>
+                                <th></th>
                             </tr>
                         </thead>
                         <tbody>
@@ -63,6 +64,13 @@
                                 <td><strong><?= number_format($b['quantite_demandee'], 0) ?></strong></td>
                                 <td style="color: green;"><?= number_format($b['quantite_recue'], 0) ?></td>
                                 <td style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
+                                <?php 
+                                    if($b['reste'] > 0) {
+                                ?>
+                                <td><button>Acheter</button></td>
+                                <?php
+                                    }
+                                ?>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

@@ -91,4 +91,17 @@ class Config
         $query = $this->db->prepare("DELETE FROM BNGRC_config WHERE id = :id");
         return $query->execute([':id' => $id]);
     }
+
+    public function getFraisConfig()
+    {
+        $query = $this->db->prepare("SELECT frais_achat FROM BNGRC_config LIMIT 1");
+        $query->execute();
+        $result = $query->fetch(PDO::FETCH_ASSOC);
+        
+        if ($result) {
+            $this->frais_achat = $result['frais_achat'];
+            return $this->frais_achat;
+        }
+        return null;
+    }
 }
