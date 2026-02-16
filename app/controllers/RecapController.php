@@ -23,11 +23,38 @@ class RecapController {
 	}
 
 
-    public static function showRecap() {
+    public function calcVMallbesoins() {
+        $allbesoins = BesoinController::getAll();
+        $total = 0;
+        foreach ($allbesoins as $b) {
+            $model = new BesoinVille($this->db);
+            $model->read($b['id']);
+            $total += BesoinController::calcValeurMonetaire($model);
+        }
+        return $total;
+    }
+
+    public function calcVMsatisfiedbesoin() {
+        $allbesoins = BesoinController::getAll();
+        $total = 0;
+        foreach ($allbesoins as $b) {
+            $model = new BesoinVille($this->db);
+            $model->read($b['id']);
+            $total += BesoinController::calcValeurMonetaire($model);
+        }
+        return $total;
+    }
+
+    public function showRecap() {
+        $this->db = Flight::db();
+        $total = $this->calcVMallbesoins();
+
         Flight::render('model', [
-            'page' => 'recapitulation/recap'
+            'page' => 'recapitulation/recap',
+            'total'=> $total
         ]);
     }
+
 
 
 

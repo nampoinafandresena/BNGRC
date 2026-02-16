@@ -44,10 +44,8 @@ $router->group('', function(Router $router) use ($app) {
 
 	});
 
-	$router->get('/recap', function() use ($app, $dashboardController) {
-		$app->render('model', [ 
-			'page' => 'recapitulation/recap' 
-		]);
+	$router->group('/recap', function() use ($router) {
+		$router->get('/', [ RecapController::class, 'showRecap' ]);
 	});
 
 	$router->group('/api', function() use ($router) {

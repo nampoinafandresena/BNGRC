@@ -12,38 +12,50 @@
             <button class="btn-gold">Actualiser</button>
         </div>
 
-        <div class="city-content">
+        <div class="city-content" style="grid-template-columns: 1fr; text-align:center;">
 
-            <!-- KPI 1 -->
+    <!-- ===== LIGNE HAUTE : TOTAL vs DISTRIBUÉ ===== -->
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:40px;">
+
+            <!-- TOTAL -->
             <div class="panel">
                 <h4>Montant Total des Besoins</h4>
-                <h2 style="font-size:2.2rem;">12 450 000 000 Ar</h2>
-                <span class="status-badge critical">Objectif 100%</span>
+                <h2 style="font-size:2.5rem;"><?= $total ?>Ar</h2>
+                <a href="" class="status-badge critical">Voir les details</a>
+                
             </div>
 
-            <!-- KPI 2 -->
+            <!-- DISTRIBUÉ -->
             <div class="panel">
-                <h4>Besoins Satisfaits</h4>
-                <h2 style="font-size:2.2rem;">7 980 000 000 Ar</h2>
-                <span class="status-badge delivered">Distribué</span>
+                <h4>Montant Déjà Distribué</h4>
+                <h2 style="font-size:2.5rem; color:var(--gold);">
+                    7 980 000 000 Ar
+                </h2>
+                <a href="" class="status-badge delivered">Voir les details</a>
             </div>
 
-            <!-- KPI 3 -->
-            <div class="panel">
-                <h4>Besoins Restants</h4>
-                <h2 style="font-size:2.2rem;">4 470 000 000 Ar</h2>
-                <span class="status-badge transit">À financer</span>
-            </div>
+        </div>
 
-            <!-- KPI 4 (Taux de Couverture) -->
-            <div class="panel">
-                <h4>Taux de Couverture</h4>
-                <h2 style="font-size:2.2rem;">64%</h2>
-                <span class="status-badge delivered">En progression</span>
+        <!-- ===== LIGNE BASSE : RESTE À FINANCER ===== -->
+        <div style="max-width:600px; margin:0 auto;">
+
+            <div class="panel" style="padding:30px;">
+                <h4 style="font-size:1rem;">Montant Restant à Financer</h4>
+
+                <h1 style="
+                    font-size:3rem;
+                    margin:20px 0;
+                ">
+                    4 470 000 000 Ar
+                </h1>
+                <a href="" class="status-badge transit" >Voir les details</a>
+                
             </div>
 
         </div>
     </div>
+
+</div>
 
     <!-- ===== RÉCAPITULATION PAR VILLE ===== -->
     <!-- <div class="city-block">

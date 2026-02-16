@@ -4,6 +4,7 @@ namespace app\controllers;
 
 use app\models\BesoinVille;
 use app\models\Ville;
+use BackedEnum;
 use flight;
 use flight\Engine;
 
@@ -50,5 +51,16 @@ class BesoinController {
 
     }
 
+    public static function calcValeurMonetaire($besoin) {
+        $pu = $besoin->getPrixUnitaire();
+        $quantite = $besoin->getQuantiteDemandee();
+        return $pu * $quantite;
+    }
+
+    public static function getAll() {
+        $db = Flight::db();
+        $list = BesoinVille::readAll($db);
+        return $list;
+    }
 }
 ?>
