@@ -6,7 +6,7 @@
     <div class="city-block">
         <div class="city-header">
             <h3>Indicateurs Clés Nationaux</h3>
-            <button class="btn-gold">Actualiser</button>
+            <button class="btn-gold" id="actualiserbtn">Actualiser</button>
         </div>
 
         <div class="city-content" style="grid-template-columns: 1fr; text-align:center;">
@@ -16,7 +16,7 @@
             <!-- TOTAL -->
             <div class="panel">
                 <h4>Montant Total des Besoins</h4>
-                <h2 style="font-size:2.5rem;"><?= $total ?> Ar</h2>
+                <h2 style="font-size:2.5rem;" id="totalAmount"><?= $total ?> Ar</h2>
                 <a href="<?= BASE_URL ?>/" class="status-badge critical">Voir les details</a>
                 
             </div>
@@ -24,7 +24,7 @@
             <!-- DISTRIBUÉ -->
             <div class="panel">
                 <h4>Montant Besoins satisfaits</h4>
-                <h2 style="font-size:2.5rem; color:var(--gold);"><?= $satisfied ?> Ar</h2>
+                <h2 style="font-size:2.5rem; color:var(--gold);" id="distributedAmount"><?= $satisfied ?> Ar</h2>
                 <a href="<?= BASE_URL ?>/" class="status-badge delivered">Voir les details</a>
             </div>
 
@@ -39,7 +39,7 @@
                 <h1 style="
                     font-size:3rem;
                     margin:20px 0;
-                ">
+                " id="remainingAmount">
                     <?= $reste ?> Ar
                 </h1>
                 <a href="<?= BASE_URL ?>/" class="status-badge transit" >Voir les details</a>
@@ -123,3 +123,4 @@
     </div> -->
 
 </div>
+<script src="<?= BASE_URL ?>/assets/js/script.js"></script>

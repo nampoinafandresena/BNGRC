@@ -46,7 +46,9 @@ $router->group('', function(Router $router) use ($app) {
 
 	$router->group('/recap', function() use ($router) {
 		$router->get('/', [ RecapController::class, 'showRecap' ]);
+		$router->get('/data', [ RecapController::class, 'getRecapData' ]);
 	});
+
 
 	$router->group('/api', function() use ($router) {
 		$router->get('/users', [ ApiExampleController::class, 'getUsers' ]);

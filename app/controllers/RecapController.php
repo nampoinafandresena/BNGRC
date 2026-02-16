@@ -66,6 +66,20 @@ class RecapController {
         ]);
     }
 
+    public function getRecapData()
+    {
+        $this->db = Flight::db();
+
+        $total = $this->calcVMallbesoins();
+        $satisfied = $this->calcVMsatisfiedbesoin();
+        $reste = $this->calcVMreste();
+
+        Flight::json([
+            'total' => $total,
+            'satisfied' => $satisfied,
+            'reste' => $reste
+        ]);
+    }
 
 
 
