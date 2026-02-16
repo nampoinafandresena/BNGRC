@@ -1,11 +1,8 @@
 <div class="container">
-
-    <!-- ===== TITRE ===== -->
     <div class="section-title">
         <h2>Situation Nationale des Secours</h2>
     </div>
 
-    <!-- ===== KPI FINANCIERS ===== -->
     <div class="city-block">
         <div class="city-header">
             <h3>Indicateurs Clés Nationaux</h3>
@@ -14,14 +11,13 @@
 
         <div class="city-content" style="grid-template-columns: 1fr; text-align:center;">
 
-    <!-- ===== LIGNE HAUTE : TOTAL vs DISTRIBUÉ ===== -->
         <div style="display:grid; grid-template-columns:1fr 1fr; gap:40px; margin-bottom:40px;">
 
             <!-- TOTAL -->
             <div class="panel">
                 <h4>Montant Total des Besoins</h4>
                 <h2 style="font-size:2.5rem;"><?= $total ?> Ar</h2>
-                <a href="" class="status-badge critical">Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge critical">Voir les details</a>
                 
             </div>
 
@@ -29,7 +25,7 @@
             <div class="panel">
                 <h4>Montant Besoins satisfaits</h4>
                 <h2 style="font-size:2.5rem; color:var(--gold);"><?= $satisfied ?> Ar</h2>
-                <a href="" class="status-badge delivered">Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge delivered">Voir les details</a>
             </div>
 
         </div>
@@ -44,9 +40,9 @@
                     font-size:3rem;
                     margin:20px 0;
                 ">
-                    4 470 000 000 Ar
+                    <?= $reste ?> Ar
                 </h1>
-                <a href="" class="status-badge transit" >Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge transit" >Voir les details</a>
                 
             </div>
 

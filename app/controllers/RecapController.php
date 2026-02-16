@@ -46,15 +46,23 @@ class RecapController {
         return $total;
     }
 
+    public function calcVMreste() {
+        $total = $this->calcVMallbesoins();
+        $satisfied = $this->calcVMsatisfiedbesoin();
+        return $total - $satisfied;
+    }
+
     public function showRecap() {
         $this->db = Flight::db();
         $total = $this->calcVMallbesoins();
         $satisfied = $this->calcVMsatisfiedbesoin();
+        $reste = $this->calcVMreste();
 
         Flight::render('model', [
             'page' => 'recapitulation/recap',
             'total'=> $total,
-            'satisfied' => $satisfied
+            'satisfied' => $satisfied,
+            'reste' => $reste
         ]);
     }
 
