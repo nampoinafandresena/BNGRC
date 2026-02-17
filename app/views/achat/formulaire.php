@@ -2,7 +2,7 @@
     <div class="donation-sim-box" style="text-align: left;">
         <h2 style="color: var(--royal-red); margin-bottom: 20px;">Finaliser l'achat de secours</h2>
         
-        <form action="/achat/valider" method="POST">
+        <form action="<?= BASE_URL ?>/achat/valider" method="POST">
             <input type="hidden" name="id_ville" value="<?= $params->id_ville ?>">
             <input type="hidden" name="id_article" value="<?= $params->id_article ?>">
             <input type="hidden" name="prix_unitaire" value="<?= $params->prix_unitaire ?>">
@@ -35,7 +35,7 @@
 
             <div style="margin-top: 30px; display: flex; gap: 10px;">
                 <button type="submit" class="btn-gold">Confirmer l'achat</button>
-                <a href="/" class="btn-gold" style="background: #666; text-decoration: none;">Annuler</a>
+                <a href="<?= BASE_URL ?>/" class="btn-gold" style="background: #666; text-decoration: none;">Annuler</a>
             </div>
         </form>
     </div>
