@@ -91,6 +91,7 @@ $router->group('', function(Router $router) use ($app) {
 	 * =====================================================
 	 */
 	$router->group('/dispatch', function() use ($router) {
+		// dispatch par date
 		$router->get('/preview', function() {
 			$app = Flight::app();
 			$dispatchController = new DispatchController($app);
@@ -114,6 +115,22 @@ $router->group('', function(Router $router) use ($app) {
 			header('Content-Type: application/json');
 			echo json_encode($result);
 		});
+		// Nouvelles routes (minimum)
+        $router->get('/preview-minimum', function() {
+            $app = Flight::app();
+            $dispatchController = new DispatchController($app);
+            $result = $dispatchController->previewMinimumDispatch();
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        });
+
+        $router->post('/validate-minimum', function() {
+            $app = Flight::app();
+            $dispatchController = new DispatchController($app);
+            $result = $dispatchController->validateMinimumDispatch();
+            header('Content-Type: application/json');
+            echo json_encode($result);
+        });
 	});
 	
 }, [ SecurityHeadersMiddleware::class ]);

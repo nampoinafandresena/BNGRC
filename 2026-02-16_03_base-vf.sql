@@ -1,3 +1,6 @@
+drop database BNGRC;
+
+
 CREATE DATABASE IF NOT EXISTS BNGRC;
 USE BNGRC;
 

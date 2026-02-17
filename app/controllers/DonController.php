@@ -44,7 +44,7 @@ class DonController {
         $model->setDateReception($date_reception);
         $model->setDonateur($donateur);
         $model->create();
-        Flight::redirect(BASE_URL );
+        Flight::redirect('/');
 
     }
 
