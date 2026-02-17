@@ -1,7 +1,11 @@
 RewriteEngine On
+
+RewriteBase /ETU004025/BNGRC/
+
 RewriteCond %{REQUEST_FILENAME} !-f
 RewriteCond %{REQUEST_FILENAME} !-d
 RewriteRule ^(.*)$ index.php [QSA,L]
+
 
 # BEGIN GZIP
 <ifmodule mod_deflate.c>

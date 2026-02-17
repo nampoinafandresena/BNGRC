@@ -5,7 +5,7 @@
     </div>
 
     <div class="donation-sim-box">
-        <h3 style="color: var(--royal-red); margin-bottom: 20px;">🎁 Suivi des Dons en Temps Réel</h3>
+        <h3 style="color: var(--royal-red); margin-bottom: 20px;"> Suivi des Dons en Temps Réel</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
                 <tr style="background-color: #f0f8ff;">
@@ -120,7 +120,7 @@
 
     function resetDispatch() {
         if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les distributions? Cette action est irréversible.')) {
-            fetch('/dispatch/reset', { method: 'POST' })
+            fetch('<?= BASE_URL ?>/dispatch/reset', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -141,7 +141,7 @@
     // ========================================================
     
     function loadDons() {
-        fetch('/api/dons')
+        fetch('<?= BASE_URL ?>/api/dons')
             .then(response => response.json())
             .then(dons => {
                 const tableBody = document.getElementById('donsTableBody');
@@ -245,7 +245,7 @@
         simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
         resultBox.style.display = 'block';
         
-        const endpoint = type === 'minimum' ? '/dispatch/preview-minimum' : '/dispatch/preview';
+        const endpoint = type === 'minimum' ? '<?= BASE_URL ?>/dispatch/preview-minimum' : '<?= BASE_URL ?>/dispatch/preview';
         
         fetch(endpoint)
         .then(response => response.json())
@@ -318,7 +318,7 @@
         validateBtn.disabled = true;
         simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
         
-        const endpoint = currentSimulationType === 'minimum' ? '/dispatch/validate-minimum' : '/dispatch/validate';
+        const endpoint = currentSimulationType === 'minimum' ? '<?= BASE_URL ?>/dispatch/validate-minimum' : '<?= BASE_URL ?>/dispatch/validate';
         
         fetch(endpoint, {
             method: 'POST',

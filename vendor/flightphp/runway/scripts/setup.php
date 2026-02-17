@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use flight\commands\ConfigSetCommand;
+use Ahc\Cli\Application;
+
 $interactor = new Ahc\Cli\IO\Interactor();
 
 $interactor->boldBlue('Welcome to the Runway setup wizard!', true);
@@ -38,8 +41,10 @@ if ($choice === '4') {
 
 $json = json_encode([
     'index_root' => $index_location,
-	'app_root' => $app_location
+    'app_root' => $app_location
 ], JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES);
 
 $interactor->boldGreen('Your settings have been saved!', true);
-file_put_contents(getcwd() . '/.runway-config.json', $json);
+
+/** @var Application $consoleApp */
+$consoleApp->handle([$projectRoot . 'runway', 'config:set', 'runway', $json]);

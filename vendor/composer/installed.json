@@ -78,17 +78,17 @@
         },
         {
             "name": "flightphp/core",
-            "version": "v3.17.2",
-            "version_normalized": "3.17.2.0",
+            "version": "v3.18.0",
+            "version_normalized": "3.18.0.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/flightphp/core.git",
-                "reference": "095a46663f7090c549f5c3459f0dada893b3b5d9"
+                "reference": "88d7032928c09b98e65ccd87b7f8a341a40cc3d2"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/flightphp/core/zipball/095a46663f7090c549f5c3459f0dada893b3b5d9",
-                "reference": "095a46663f7090c549f5c3459f0dada893b3b5d9",
+                "url": "https://api.github.com/repos/flightphp/core/zipball/88d7032928c09b98e65ccd87b7f8a341a40cc3d2",
+                "reference": "88d7032928c09b98e65ccd87b7f8a341a40cc3d2",
                 "shasum": ""
             },
             "require": {
@@ -101,14 +101,13 @@
             "require-dev": {
                 "ext-pdo_sqlite": "*",
                 "flightphp/container": "^1.0",
-                "flightphp/runway": "^0.2.3 || ^1.0",
+                "flightphp/runway": "^1.2",
                 "league/container": "^4.2",
                 "level-2/dice": "^4.0",
                 "phpstan/extension-installer": "^1.4",
                 "phpstan/phpstan": "^2.1",
                 "phpunit/phpunit": "^9.6",
                 "rregeer/phpunit-coverage-check": "^0.3.1",
-                "spatie/phpunit-watcher": "^1.23 || ^1.24",
                 "squizlabs/php_codesniffer": "^3.11"
             },
             "suggest": {
@@ -116,7 +115,7 @@
                 "phpstan/phpstan": "PHP Static Analyzer",
                 "tracy/tracy": "Tracy debugger"
             },
-            "time": "2025-10-03T21:05:48+00:00",
+            "time": "2026-01-15T01:44:32+00:00",
             "type": "library",
             "installation-source": "dist",
             "autoload": {
@@ -151,38 +150,38 @@
             "homepage": "http://flightphp.com",
             "support": {
                 "issues": "https://github.com/flightphp/core/issues",
-                "source": "https://github.com/flightphp/core/tree/v3.17.2"
+                "source": "https://github.com/flightphp/core/tree/v3.18.0"
             },
             "install-path": "../flightphp/core"
         },
         {
             "name": "flightphp/runway",
-            "version": "v1.1.2",
-            "version_normalized": "1.1.2.0",
+            "version": "v1.2.6",
+            "version_normalized": "1.2.6.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/flightphp/runway.git",
-                "reference": "b88c1901b77eda935ef475af772445c3108cf23f"
+                "reference": "50764ca235349886cc926d7b49b48e3fee55a146"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/flightphp/runway/zipball/b88c1901b77eda935ef475af772445c3108cf23f",
-                "reference": "b88c1901b77eda935ef475af772445c3108cf23f",
+                "url": "https://api.github.com/repos/flightphp/runway/zipball/50764ca235349886cc926d7b49b48e3fee55a146",
+                "reference": "50764ca235349886cc926d7b49b48e3fee55a146",
                 "shasum": ""
             },
             "require": {
-                "adhocore/cli": "^1.7",
-                "nette/php-generator": "^4.1",
-                "php": "^8.2"
+                "adhocore/cli": "^0.9 || ^1.7",
+                "nette/php-generator": "^3.1 || ^4.1"
             },
             "require-dev": {
+                "flightphp/core": "^3.17",
                 "phpstan/extension-installer": "^1.3",
                 "phpstan/phpstan": "^1.10",
                 "phpunit/phpunit": "^9.5",
                 "rregeer/phpunit-coverage-check": "^0.3.1",
                 "squizlabs/php_codesniffer": "^3.8"
             },
-            "time": "2025-01-11T17:52:47+00:00",
+            "time": "2026-01-15T05:31:38+00:00",
             "bin": [
                 "runway"
             ],
@@ -206,7 +205,7 @@
             "description": "Console app for the Flight PHP Framework.",
             "support": {
                 "issues": "https://github.com/flightphp/runway/issues",
-                "source": "https://github.com/flightphp/runway/tree/v1.1.2"
+                "source": "https://github.com/flightphp/runway/tree/v1.2.6"
             },
             "install-path": "../flightphp/runway"
         },
@@ -260,17 +259,17 @@
         },
         {
             "name": "nette/php-generator",
-            "version": "v4.2.0",
-            "version_normalized": "4.2.0.0",
+            "version": "v4.2.1",
+            "version_normalized": "4.2.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/php-generator.git",
-                "reference": "4707546a1f11badd72f5d82af4f8a6bc64bd56ac"
+                "reference": "52aff4d9b12f20ca9f3e31a559b646d2fd21dd61"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/php-generator/zipball/4707546a1f11badd72f5d82af4f8a6bc64bd56ac",
-                "reference": "4707546a1f11badd72f5d82af4f8a6bc64bd56ac",
+                "url": "https://api.github.com/repos/nette/php-generator/zipball/52aff4d9b12f20ca9f3e31a559b646d2fd21dd61",
+                "reference": "52aff4d9b12f20ca9f3e31a559b646d2fd21dd61",
                 "shasum": ""
             },
             "require": {
@@ -279,15 +278,15 @@
             },
             "require-dev": {
                 "jetbrains/phpstorm-attributes": "^1.2",
-                "nette/tester": "^2.4",
+                "nette/tester": "^2.6",
                 "nikic/php-parser": "^5.0",
-                "phpstan/phpstan-nette": "^2.0@stable",
+                "phpstan/phpstan": "^2.0@stable",
                 "tracy/tracy": "^2.8"
             },
             "suggest": {
                 "nikic/php-parser": "to use ClassType::from(withBodies: true) & ClassType::fromCode()"
             },
-            "time": "2025-08-06T18:24:31+00:00",
+            "time": "2026-02-09T05:43:31+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -329,27 +328,27 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/php-generator/issues",
-                "source": "https://github.com/nette/php-generator/tree/v4.2.0"
+                "source": "https://github.com/nette/php-generator/tree/v4.2.1"
             },
             "install-path": "../nette/php-generator"
         },
         {
             "name": "nette/utils",
-            "version": "v4.0.9",
-            "version_normalized": "4.0.9.0",
+            "version": "v4.1.3",
+            "version_normalized": "4.1.3.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/utils.git",
-                "reference": "505a30ad386daa5211f08a318e47015b501cad30"
+                "reference": "bb3ea637e3d131d72acc033cfc2746ee893349fe"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/utils/zipball/505a30ad386daa5211f08a318e47015b501cad30",
-                "reference": "505a30ad386daa5211f08a318e47015b501cad30",
+                "url": "https://api.github.com/repos/nette/utils/zipball/bb3ea637e3d131d72acc033cfc2746ee893349fe",
+                "reference": "bb3ea637e3d131d72acc033cfc2746ee893349fe",
                 "shasum": ""
             },
             "require": {
-                "php": "8.0 - 8.5"
+                "php": "8.2 - 8.5"
             },
             "conflict": {
                 "nette/finder": "<3",
@@ -357,8 +356,10 @@
             },
             "require-dev": {
                 "jetbrains/phpstorm-attributes": "^1.2",
+                "nette/phpstan-rules": "^1.0",
                 "nette/tester": "^2.5",
-                "phpstan/phpstan-nette": "^2.0@stable",
+                "phpstan/extension-installer": "^1.4@stable",
+                "phpstan/phpstan": "^2.1@stable",
                 "tracy/tracy": "^2.9"
             },
             "suggest": {
@@ -369,11 +370,11 @@
                 "ext-mbstring": "to use Strings::lower() etc...",
                 "ext-tokenizer": "to use Nette\\Utils\\Reflection::getUseStatements()"
             },
-            "time": "2025-10-31T00:45:47+00:00",
+            "time": "2026-02-13T03:05:33+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
-                    "dev-master": "4.0-dev"
+                    "dev-master": "4.1-dev"
                 }
             },
             "installation-source": "dist",
@@ -421,23 +422,23 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/utils/issues",
-                "source": "https://github.com/nette/utils/tree/v4.0.9"
+                "source": "https://github.com/nette/utils/tree/v4.1.3"
             },
             "install-path": "../nette/utils"
         },
         {
             "name": "tracy/tracy",
-            "version": "v2.11.0",
-            "version_normalized": "2.11.0.0",
+            "version": "v2.11.1",
+            "version_normalized": "2.11.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/nette/tracy.git",
-                "reference": "eec57bcf2ff11d79f519a19da9d7ae1e2c63c42e"
+                "reference": "c4a03c921af532b74c63edd8bf3f68a99dec7e77"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/nette/tracy/zipball/eec57bcf2ff11d79f519a19da9d7ae1e2c63c42e",
-                "reference": "eec57bcf2ff11d79f519a19da9d7ae1e2c63c42e",
+                "url": "https://api.github.com/repos/nette/tracy/zipball/c4a03c921af532b74c63edd8bf3f68a99dec7e77",
+                "reference": "c4a03c921af532b74c63edd8bf3f68a99dec7e77",
                 "shasum": ""
             },
             "require": {
@@ -453,12 +454,12 @@
                 "nette/di": "^3.0",
                 "nette/http": "^3.0",
                 "nette/mail": "^3.0 || ^4.0",
-                "nette/tester": "^2.2",
+                "nette/tester": "^2.6",
                 "nette/utils": "^3.0 || ^4.0",
-                "phpstan/phpstan-nette": "^2.0@stable",
+                "phpstan/phpstan": "^2.0@stable",
                 "psr/log": "^1.0 || ^2.0 || ^3.0"
             },
-            "time": "2025-10-31T00:12:50+00:00",
+            "time": "2026-02-08T02:51:45+00:00",
             "type": "library",
             "extra": {
                 "branch-alias": {
@@ -502,7 +503,7 @@
             ],
             "support": {
                 "issues": "https://github.com/nette/tracy/issues",
-                "source": "https://github.com/nette/tracy/tree/v2.11.0"
+                "source": "https://github.com/nette/tracy/tree/v2.11.1"
             },
             "install-path": "../tracy/tracy"
         }
