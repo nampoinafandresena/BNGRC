@@ -7,12 +7,12 @@
     <div class="donation-sim-box">
         <h3 style="color: var(--royal-red); margin-bottom: 20px;">Simulateur de Distribution d'Aide</h3>
         <p style="margin-bottom: 30px; font-size: 0.95rem;">
-            Lancez la simulation automatique pour redistribuer les dons selon les besoins et l'ordre chronologique.
+            Choisissez une stratégie de distribution : par ordre chronologique ou par priorité minimale.
         </p>
         
         <div class="sim-form">
-            <button class="btn-gold" onclick="simulateDistribution()"> Simuler par date</button>
-            <button></button>
+            <button class="btn-gold" onclick="simulateDistribution('date')">📅 Simuler par date</button>
+            <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">⚡ Simuler par min</button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
         </div>
@@ -25,7 +25,6 @@
 
     <div class="city-grid">
         <?php 
-        // On regroupe les données par ville pour l'affichage
         $villes = [];
         foreach($stats as $s) {
             $villes[$s['ville_nom']]['region'] = $s['region_nom'];
@@ -60,11 +59,11 @@
                         </thead>
                         <tbody>
                             <?php foreach($infos['besoins'] as $b): ?>
-                            <tr>
+                            <tr data-besoin-id="<?= $b['id_besoin_ville'] ?>">
                                 <td><?= htmlspecialchars($b['article_label']) ?></td>
                                 <td><strong><?= number_format($b['quantite_demandee'], 0) ?></strong></td>
-                                <td style="color: green;"><?= number_format($b['quantite_recue'], 0) ?></td>
-                                <td style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
+                                <td class="quantite-recue" style="color: green;"><?= number_format($b['quantite_recue'], 0) ?></td>
+                                <td class="reste-value" style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
                                 <?php if($b['reste'] > 0): ?>
                                     <td>
                                         <a href="<?= BASE_URL ?>achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>" 
@@ -83,9 +82,9 @@
                 <div class="panel">
                     <h4><i class="fas fa-info-circle" style="margin-right: 10px;"></i> Résumé Logistique</h4>
                     <div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
-                        <p style="font-size: 0.9rem;">Dernière mise à jour : <?= date('d/m/Y H:i') ?></p>
+                        <p style="font-size: 0.9rem;">Dernière mise à jour : <span id="update-time"><?= date('d/m/Y H:i') ?></span></p>
                         <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
-                            Les distributions sont calculées selon l'ordre de priorité chronologique des besoins saisis.
+                            Les distributions sont calculées selon la stratégie choisie.
                         </p>
                     </div>
                 </div>
@@ -96,29 +95,50 @@
 </main>
 
 <script>
-    /*
-     * ========================================================
-     * LOGIQUE DE SIMULATION ET VALIDATION DES DISTRIBUTIONS
-     * ========================================================
-     * 
-     * ANCIEN COMPORTEMENT (COMMENTÉ) :
-     * - Route unique : /dispatch/simulate
-     * - Sauvegardait directement les distributions
-     * - Rafraîchissait la page après 2 secondes automatiquement
-     * Inconvénient : pas de contrôle utilisateur, pas de preview
-     * 
-     * NOUVEAU COMPORTEMENT :
-     * - Deux routes séparées : /dispatch/preview et /dispatch/validate
-     * - /preview : affiche les propositions (sans sauvegarder)
-     * - Utilisateur peut voir le résultat et décider
-     * - Si validation : /validate persiste les données
-     * - Boutons : Simuler, Valider, Annuler
-     * ========================================================
-     */
-    
-    let currentProposals = []; // Stocke les propositions actuelles
+    let currentProposals = [];
+    let currentSimulationType = null;
+    let originalState = null;
 
-    function simulateDistribution() {
+    // Sauvegarder l'état initial
+    function saveOriginalState() {
+        originalState = [];
+        document.querySelectorAll('tr[data-besoin-id]').forEach(row => {
+            originalState.push({
+                id: row.dataset.besoinId,
+                recue: row.querySelector('.quantite-recue').textContent,
+                reste: row.querySelector('.reste-value').textContent
+            });
+        });
+    }
+
+    // Restaurer l'état initial
+    function restoreOriginalState() {
+        originalState.forEach(item => {
+            const row = document.querySelector(`tr[data-besoin-id="${item.id}"]`);
+            if (row) {
+                row.querySelector('.quantite-recue').textContent = item.recue;
+                row.querySelector('.reste-value').textContent = item.reste;
+            }
+        });
+    }
+
+    // Appliquer l'état simulé
+    function applySimulatedState(simulatedStats) {
+        simulatedStats.forEach(stat => {
+            const row = document.querySelector(`tr[data-besoin-id="${stat.id_besoin_ville}"]`);
+            if (row) {
+                row.querySelector('.quantite-recue').textContent = number_format(stat.quantite_recue);
+                row.querySelector('.reste-value').textContent = number_format(stat.reste);
+            }
+        });
+    }
+
+    function number_format(value) {
+        return new Intl.NumberFormat('fr-FR').format(Math.round(value));
+    }
+
+    function simulateDistribution(type) {
+        saveOriginalState();
         const resultBox = document.getElementById('simResult');
         const simContent = document.getElementById('simContent');
         const validateBtn = document.getElementById('validateBtn');
@@ -127,21 +147,28 @@
         simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
         resultBox.style.display = 'block';
         
-        fetch('/dispatch/preview')
+        const endpoint = type === 'minimum' ? '/dispatch/preview-minimum' : '/dispatch/preview';
+        
+        fetch(endpoint)
             .then(response => response.json())
             .then(data => {
                 currentProposals = data.propositions;
+                currentSimulationType = type;
                 
+                // Appliquer l'état simulé
+                if (data.simulated_state) {
+                    applySimulatedState(data.simulated_state);
+                }
+
                 let statsHtml = `
                     <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
-                        <p><strong>📊 Propositions de Distribution</strong></p>
+                        <p><strong>📊 Propositions de Distribution (${type === 'minimum' ? 'Priorité minimale' : 'Par date'})</strong></p>
                         <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
                         <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
                         <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
                     </div>
                 `;
                 
-                // Afficher le tableau des propositions
                 if (data.propositions.length > 0) {
                     statsHtml += `
                         <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
@@ -149,7 +176,9 @@
                                 <tr style="background-color: #f0f8ff;">
                                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Don</th>
                                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
                                     <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Quantité</th>
+                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Destination</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -157,7 +186,9 @@
                                     <tr>
                                         <td style="border: 1px solid #ddd; padding: 10px;">#${prop.id_don}</td>
                                         <td style="border: 1px solid #ddd; padding: 10px;">${prop.donateur}</td>
+                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.article_label}</td>
                                         <td style="border: 1px solid #ddd; padding: 10px;">${prop.quantite_attribuee}</td>
+                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.ville_nom}</td>
                                     </tr>
                                 `).join('')}
                             </tbody>
@@ -173,28 +204,27 @@
                 resultBox.scrollIntoView({ behavior: 'smooth' });
             })
             .catch(error => {
-                simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur lors de la simulation: ' + error.message + '</p>';
+                simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
             });
     }
 
     function validateDistribution() {
         if (currentProposals.length === 0) {
-            alert('Aucune proposition à valider. Lancez d\'abord une simulation.');
+            alert('Aucune proposition à valider.');
             return;
         }
 
         const validateBtn = document.getElementById('validateBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
         const simContent = document.getElementById('simContent');
         
-        simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
         validateBtn.disabled = true;
+        simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
         
-        fetch('/dispatch/validate', {
+        const endpoint = currentSimulationType === 'minimum' ? '/dispatch/validate-minimum' : '/dispatch/validate';
+        
+        fetch(endpoint, {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            }
+            headers: { 'Content-Type': 'application/json' }
         })
         .then(response => response.json())
         .then(data => {
@@ -209,11 +239,10 @@
                     </div>
                 `;
                 simContent.innerHTML = resultHtml;
-                validateBtn.style.display = 'none';
-                cancelBtn.style.display = 'none';
+                document.getElementById('validateBtn').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
                 currentProposals = [];
                 
-                // Rafraîchir la page après 2 secondes
                 setTimeout(() => {
                     location.reload();
                 }, 2000);
@@ -229,18 +258,19 @@
         })
         .catch(error => {
             validateBtn.disabled = false;
-            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur lors de la validation: ' + error.message + '</p>';
+            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
         });
     }
 
     function cancelSimulation() {
-        const resultBox = document.getElementById('simResult');
-        const validateBtn = document.getElementById('validateBtn');
-        const cancelBtn = document.getElementById('cancelBtn');
-        
-        resultBox.style.display = 'none';
-        validateBtn.style.display = 'none';
-        cancelBtn.style.display = 'none';
+        restoreOriginalState();
+        document.getElementById('simResult').style.display = 'none';
+        document.getElementById('validateBtn').style.display = 'none';
+        document.getElementById('cancelBtn').style.display = 'none';
         currentProposals = [];
+        currentSimulationType = null;
     }
+
+    // Initialiser au chargement
+    saveOriginalState();
 </script>

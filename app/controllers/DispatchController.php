@@ -88,6 +88,203 @@ class DispatchController
      */
 
     
+    public function simulateDispatchByMinimum()
+    {
+        $propositions = [];
+        $stats = [
+            'dons_traites' => 0,
+            'attributions_proposees' => 0,
+            'quantite_totale_proposee' => 0
+        ];
+
+        $db = flight::db();
+
+        // 1. Récupérer tous les besoins non satisfaits, triés par reste croissant (minimum en premier)
+        $query = $db->prepare(
+            "SELECT 
+                bv.id as id_besoin_ville,
+                bv.id_ville,
+                bv.id_article,
+                bv.quantite_demandee,
+                a.prix_unitaire,
+                a.label as article_label,
+                v.nom as ville_nom,
+                (bv.quantite_demandee - COALESCE(SUM(d.quantite_attribuee), 0)) as reste
+            FROM BNGRC_besoin_ville bv
+            JOIN BNGRC_article a ON bv.id_article = a.id
+            JOIN BNGRC_ville v ON bv.id_ville = v.id
+            LEFT JOIN BNGRC_distribution d ON d.id_besoin_ville = bv.id
+            GROUP BY bv.id
+            HAVING reste > 0
+            ORDER BY reste ASC"
+        );
+        $query->execute();
+        $besoinsNonSatisfaits = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        // 2. Pour chaque besoin (trié par minimum), chercher des dons disponibles
+        foreach ($besoinsNonSatisfaits as $besoin) {
+            $idArticle = $besoin['id_article'];
+            $quantiteManquante = $besoin['reste'];
+
+            if ($quantiteManquante <= 0) {
+                continue;
+            }
+
+            // Chercher les dons disponibles pour cet article
+            $queryDons = $db->prepare(
+                "SELECT 
+                    dc.id,
+                    dc.quantite_recue,
+                    dc.donateur,
+                    (dc.quantite_recue - COALESCE(SUM(d.quantite_attribuee), 0)) as quantite_disponible
+                FROM BNGRC_don_collecte dc
+                LEFT JOIN BNGRC_distribution d ON d.id_don = dc.id
+                WHERE dc.id_article = :id_article
+                GROUP BY dc.id
+                HAVING quantite_disponible > 0"
+            );
+            $queryDons->execute([':id_article' => $idArticle]);
+            $donsDisponibles = $queryDons->fetchAll(\PDO::FETCH_ASSOC);
+
+            // 3. Attribuer les dons au besoin
+            foreach ($donsDisponibles as $don) {
+                if ($quantiteManquante <= 0) {
+                    break;
+                }
+
+                $quantiteAAttribuer = min($don['quantite_disponible'], $quantiteManquante);
+
+                $propositions[] = [
+                    'id_don' => $don['id'],
+                    'id_article' => $idArticle,
+                    'id_besoin_ville' => $besoin['id_besoin_ville'],
+                    'quantite_attribuee' => $quantiteAAttribuer,
+                    'donateur' => $don['donateur'],
+                    'ville_id' => $besoin['id_ville'],
+                    'article_label' => $besoin['article_label'],
+                    'ville_nom' => $besoin['ville_nom'],
+                    'reste_initial' => $besoin['reste']
+                ];
+
+                $stats['attributions_proposees']++;
+                $stats['quantite_totale_proposee'] += $quantiteAAttribuer;
+                $quantiteManquante -= $quantiteAAttribuer;
+            }
+        }
+
+        $stats['dons_traites'] = count(array_unique(array_column($propositions, 'id_don')));
+
+        return [
+            'propositions' => $propositions,
+            'stats' => $stats
+        ];
+    }
+
+    /**
+     * Récupère l'état global des villes AVEC les propositions appliquées (simulation)
+     * Utilisé pour mettre à jour l'affichage sans sauvegarder
+     */
+    public function getSimulatedState($propositions = [])
+    {
+        $db = flight::db();
+
+        // État initial depuis la base
+        $query = $db->prepare(
+            "SELECT 
+                bv.id as id_besoin_ville,
+                v.id as id_ville,
+                v.nom AS ville_nom, 
+                r.nom AS region_nom,
+                a.id AS id_article,
+                a.label AS article_label, 
+                a.prix_unitaire,
+                bv.quantite_demandee,
+                COALESCE(SUM(d.quantite_attribuee), 0) AS quantite_recue,
+                (bv.quantite_demandee - COALESCE(SUM(d.quantite_attribuee), 0)) AS reste
+            FROM BNGRC_besoin_ville bv
+            JOIN BNGRC_ville v ON bv.id_ville = v.id
+            JOIN BNGRC_region r ON v.id_region = r.id
+            JOIN BNGRC_article a ON bv.id_article = a.id
+            LEFT JOIN BNGRC_distribution d ON d.id_besoin_ville = bv.id
+            GROUP BY bv.id
+            ORDER BY r.nom, v.nom ASC"
+        );
+        $query->execute();
+        $stats = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Appliquer les propositions de simulation sur les données
+        foreach ($propositions as $prop) {
+            foreach ($stats as &$stat) {
+                if ($stat['id_besoin_ville'] == $prop['id_besoin_ville']) {
+                    // Augmenter la quantité reçue
+                    $stat['quantite_recue'] += $prop['quantite_attribuee'];
+                    // Recalculer le reste
+                    $stat['reste'] = max(0, $stat['quantite_demandee'] - $stat['quantite_recue']);
+                    break;
+                }
+            }
+        }
+
+        return $stats;
+    }
+
+    /**
+     * Route AJAX : retourne état simulé + propositions (pour minimum dispatch)
+     */
+    public function previewMinimumDispatch()
+    {
+        $result = $this->simulateDispatchByMinimum();
+        $propositions = $result['propositions'];
+        $stats = $result['stats'];
+
+        // Récupérer l'état simulé des villes
+        $simulatedStats = $this->getSimulatedState($propositions);
+
+        return [
+            'propositions' => $propositions,
+            'stats' => $stats,
+            'simulated_state' => $simulatedStats
+        ];
+    }
+
+    /**
+     * Valide et sauvegarde les propositions du dispatch minimum
+     */
+    public function validateMinimumDispatch()
+    {
+        $result = [
+            'success' => false,
+            'attributions_creees' => 0,
+            'quantite_totale_attribuee' => 0,
+            'erreurs' => []
+        ];
+
+        $db = flight::db();
+
+        // Récupérer les propositions actuelles (recalculer)
+        $dispatchResult = $this->simulateDispatchByMinimum();
+        $propositions = $dispatchResult['propositions'];
+
+        // Sauvegarder chaque proposition
+        foreach ($propositions as $prop) {
+            $distribution = new Distribution($db);
+            $distribution
+                ->setIdDon($prop['id_don'])
+                ->setIdBesoinVille($prop['id_besoin_ville'])
+                ->setQuantiteAttribuee($prop['quantite_attribuee']);
+
+            if ($distribution->create()) {
+                $result['attributions_creees']++;
+                $result['quantite_totale_attribuee'] += $prop['quantite_attribuee'];
+            } else {
+                $result['erreurs'][] = "Erreur lors de la création pour don #{$prop['id_don']}";
+            }
+        }
+
+        $result['success'] = count($result['erreurs']) === 0;
+        return $result;
+    }
+    
     /**
      * Simule et retourne les distributions proposées SANS les sauvegarder (Preview)
      */
