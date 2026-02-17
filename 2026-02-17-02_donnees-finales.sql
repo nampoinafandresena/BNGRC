@@ -68,3 +68,29 @@ INSERT INTO BNGRC_besoin_ville (id_ville, id_article, quantite_demandee, date_de
 ((SELECT id FROM BNGRC_ville WHERE nom='Morondava'), (SELECT id FROM BNGRC_article WHERE label='Bâche'), 180, '2026-02-16'),
 ((SELECT id FROM BNGRC_ville WHERE nom='Morondava'), (SELECT id FROM BNGRC_article WHERE label='Bois'), 150, '2026-02-15'),
 ((SELECT id FROM BNGRC_ville WHERE nom='Morondava'), (SELECT id FROM BNGRC_article WHERE label='Argent'), 10000000, '2026-02-16');
+
+
+
+-- dons
+INSERT INTO BNGRC_don_collecte (date_reception, id_categorie, id_article, quantite_recue) VALUES 
+-- Dons en Argent (Catégorie 3, Article 10)
+('2026-02-16', 3, 10, 5000000),
+('2026-02-16', 3, 10, 3000000),
+('2026-02-17', 3, 10, 4000000),
+('2026-02-17', 3, 10, 1500000),
+('2026-02-17', 3, 10, 6000000),
+('2026-02-19', 3, 10, 20000000),
+
+-- Dons en Nature (Catégorie 1)
+('2026-02-16', 1, 1, 400),    -- Riz (kg)
+('2026-02-16', 1, 2, 600),    -- Eau (L)
+('2026-02-17', 1, 4, 100),    -- Haricots
+('2026-02-18', 1, 1, 2000),   -- Riz (kg)
+('2026-02-18', 1, 2, 5000),   -- Eau (L)
+('2026-02-17', 1, 4, 88),     -- Haricots
+
+-- Dons en Matériel (Catégorie 2)
+('2026-02-17', 2, 5, 50),     -- Tôle
+('2026-02-17', 2, 6, 70),     -- Bâche
+('2026-02-18', 2, 5, 300),    -- Tôle
+('2026-02-19', 2, 6, 500);    -- Bâche
