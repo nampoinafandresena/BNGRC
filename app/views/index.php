@@ -64,13 +64,15 @@
                                 <td><strong><?= number_format($b['quantite_demandee'], 0) ?></strong></td>
                                 <td style="color: green;"><?= number_format($b['quantite_recue'], 0) ?></td>
                                 <td style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
-                                <?php 
-                                    if($b['reste'] > 0) {
-                                ?>
-                                <td><button>Acheter</button></td>
-                                <?php
-                                    }
-                                ?>
+                                <?php if($b['reste'] > 0): ?>
+                                    <td>
+                                        <a href="/achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>" 
+                                        class="status-badge transit" 
+                                        style="text-decoration: none;">
+                                        <i class="fas fa-shopping-cart"></i> Acheter
+                                        </a>
+                                    </td>
+                                <?php endif; ?>
                             </tr>
                             <?php endforeach; ?>
                         </tbody>

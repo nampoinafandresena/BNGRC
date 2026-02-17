@@ -192,32 +192,20 @@ class Achat
     }
 
     /**
-     * Insère une nouvelle ligne d'achat avec calcul automatique du montant total
+     * Insère une nouvelle ligne d'achat avec montant déjà calculé
      * @param int $id_ville
      * @param int $id_article
      * @param float $quantite
-     * @param float $prix_unitaire Prix unitaire de l'article
+     * @param float $montant_argent_utilise Montant déjà calculé avec frais
      * @return bool True si succès, false sinon
      */
-    public function saveAchat($id_ville, $id_article, $quantite, $prix_unitaire)
+    public function saveAchat($id_ville, $id_article, $quantite, $montant_argent_utilise)
     {
-        // Récupère les frais d'achat en pourcentage
-        $frais_pourcentage = $this->getFraisConfig();
-        
-        if ($frais_pourcentage === null) {
-            return false; // Configuration des frais non trouvée
-        }
-
-        // Calcule le montant total TTC
-        $montant_ht = $quantite * $prix_unitaire;
-        $montant_frais = $montant_ht * $frais_pourcentage;
-        $montant_ttc = $montant_ht + $montant_frais;
-
-        // Défini les propriétés et insère
+        // Défini les propriétés et insère directement le montant fourni
         $this->setIdVille($id_ville)
             ->setIdArticle($id_article)
             ->setQuantite($quantite)
-            ->setMontantArgentUtilise($montant_ttc);
+            ->setMontantArgentUtilise($montant_argent_utilise);
 
         return $this->create();
     }

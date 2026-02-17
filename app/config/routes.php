@@ -4,6 +4,7 @@ use app\controllers\ApiExampleController;
 use app\controllers\BesoinController;
 use app\controllers\RecapController;
 use app\controllers\DonController;
+use app\controllers\AchatController;
 use app\controllers\DashboardController;
 use app\controllers\DispatchController;
 use app\middlewares\SecurityHeadersMiddleware;
@@ -32,6 +33,19 @@ $router->group('', function(Router $router) use ($app) {
 		echo '<h1>Hello world! Oh hey '.$name.'!</h1>';
 	});
 
+	$router->get('/achat/formulaire', function() use ($app){
+		$data = Flight::request()->query;
+		$app->render('model', [
+			'page' => 'achat/formulaire',
+			'params' => $data
+		]);
+	});
+
+	$router->group('/achat', function($router) use ($app) {
+		$router->get('/formulaire', [AchatController::class, 'afficherFormulaire']);	
+		$router->post('/valider', [AchatController::class, 'validerAchat']);
+	});
+
 	$router->group('/don', function() use ($router) {
 		$router->get('/formulaire', [ DonController::class, 'showForm' ]);
 		$router->post('/insert', [ DonController::class, 'insert' ]);
@@ -49,6 +63,7 @@ $router->group('', function(Router $router) use ($app) {
 	});
 
 	$router->group('/api', function() use ($router) {
+		$router->get('/recap', [DashboardController::class, 'getRecapAjax']);
 		$router->get('/users', [ ApiExampleController::class, 'getUsers' ]);
 		$router->get('/users/@id:[0-9]', [ ApiExampleController::class, 'getUser' ]);
 		$router->post('/users/@id:[0-9]', [ ApiExampleController::class, 'updateUser' ]);

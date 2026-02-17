@@ -11,8 +11,8 @@ class AchatController {
 
     protected $db;
 
-    public function __construct($db) {
-        $this->db = $db;
+    public function __construct() {
+        $this->db = Flight::db();
     }
 
     public static function getAll() {
@@ -62,7 +62,7 @@ class AchatController {
 
     public function saveAchat($data) {
         if (!isset($data['id_ville']) || !isset($data['id_article']) || 
-            !isset($data['quantite']) || !isset($data['prix_unitaire'])) {
+            !isset($data['quantite']) || !isset($data['montant_argent_utilise'])) {
             return ['success' => false, 'message' => 'Données manquantes'];
         }
 
@@ -71,7 +71,7 @@ class AchatController {
             $data['id_ville'],
             $data['id_article'],
             $data['quantite'],
-            $data['prix_unitaire']
+            $data['montant_argent_utilise']
         );
 
         if ($result) {
@@ -139,4 +139,56 @@ class AchatController {
             'date_achat' => $achat->getDateAchat()
         ];
     }
+
+    public function afficherFormulaire() {
+        // 1. Récupérer les paramètres de l'URL
+        $params = Flight::request()->query;
+
+        // 2. Récupérer les données nécessaires via les modèles
+        $frais = $this->getFraisConfig(); // Utilise ta fonction existante
+        
+        // On passe les données à la vue
+        Flight::render('model', [
+            'page' => 'achat/formulaire',
+            'params' => $params,
+            'frais' => $frais
+        ]);
+    }
+
+    public function validerAchat() {
+        $data = Flight::request()->data;
+
+        // --- RÈGLE DE GESTION 1 : Vérifier si le don existe encore ---
+        $stockNature = $this->getDonRestant($data->id_article);
+        if ($stockNature > 0) {
+            // Au lieu de sauver, on redirige avec un message d'erreur
+            // (Tu peux aussi utiliser Flight::json si tu es en Ajax)
+            Flight::halt(400, "Impossible d'acheter : il reste encore " . $stockNature . " unités en don pour cet article.");
+            return;
+        }
+
+        // --- RÈGLE DE GESTION 2 : Calcul du montant avec frais ---
+        // 0.1
+        $fraisPourcent = $this->getFraisConfig();
+    $montantHT = (float)$data->quantite * (float)$data->prix_unitaire;
+        $montantTotal = $montantHT * (1 + ($fraisPourcent));
+
+        // On prépare les données pour le modèle Achat
+        $achatData = [
+            'id_ville' => $data->id_ville,
+            'id_article' => $data->id_article,
+            'quantite' => $data->quantite,
+            'montant_argent_utilise' => $montantTotal
+        ];
+
+        // --- SAUVEGARDE ---
+        $result = $this->saveAchat($achatData);
+
+        if ($result['success']) {
+            Flight::redirect('/'); // Retour au dashboard
+        } else {
+            Flight::halt(500, "Erreur lors de l'enregistrement de l'achat.");
+        }
+    }
+
 }
