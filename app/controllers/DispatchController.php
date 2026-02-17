@@ -99,6 +99,9 @@ class DispatchController
 
         $db = flight::db();
 
+        // Tracker pour les quantités utilisées pendant la simulation
+        $donsUtilises = [];
+
         // 1. Récupérer tous les besoins non satisfaits, triés par reste croissant (minimum en premier)
         $query = $db->prepare(
             "SELECT 
@@ -152,7 +155,18 @@ class DispatchController
                     break;
                 }
 
-                $quantiteAAttribuer = min($don['quantite_disponible'], $quantiteManquante);
+                // Calculer la quantité réellement disponible (base + déjà utilisée dans cette simulation)
+                $quantiteBaseDisponible = $don['quantite_disponible'];
+                if (!isset($donsUtilises[$don['id']])) {
+                    $donsUtilises[$don['id']] = 0;
+                }
+                $quantiteReellementDisponible = $quantiteBaseDisponible - $donsUtilises[$don['id']];
+
+                if ($quantiteReellementDisponible <= 0) {
+                    continue;
+                }
+
+                $quantiteAAttribuer = min($quantiteReellementDisponible, $quantiteManquante);
 
                 $propositions[] = [
                     'id_don' => $don['id'],
@@ -165,6 +179,9 @@ class DispatchController
                     'ville_nom' => $besoin['ville_nom'],
                     'reste_initial' => $besoin['reste']
                 ];
+
+                // Tracker la quantité utilisée pour ce don
+                $donsUtilises[$don['id']] += $quantiteAAttribuer;
 
                 $stats['attributions_proposees']++;
                 $stats['quantite_totale_proposee'] += $quantiteAAttribuer;
