@@ -5,7 +5,7 @@
     </div>
 
     <div class="donation-sim-box" style="padding: 20px; margin-bottom: 30px;">
-        <form action="<?= BASE_URL ?>achat/liste" method="GET" style="display: flex; gap: 15px; align-items: center; justify-content: center;">
+        <form action="<?= BASE_URL ?>/achat/liste" method="GET" style="display: flex; gap: 15px; align-items: center; justify-content: center;">
             <label>Filtrer par ville :</label>
             <select name="id_ville" class="sim-input" style="width: 250px;">
                 <option value="">Toutes les villes</option>
@@ -16,7 +16,6 @@
                 <?php endforeach; ?>
             </select>
             <button type="submit" class="btn-gold">Filtrer</button>
-            <a href="<?= BASE_URL ?>achat/liste" class="btn-gold" style="background: #666; text-decoration: none;">Réinitialiser</a>
         </form>
     </div>
 
