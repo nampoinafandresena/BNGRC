@@ -59,7 +59,7 @@
     </div>
     
     <div style="margin-top: 20px;">
-        <a href="<?= BASE_URL ?>" class="btn-gold" style="background: var(--dark-grey); text-decoration: none;">
+        <a href="<?= BASE_URL ?>/" class="btn-gold" style="background: var(--dark-grey); text-decoration: none;">
             <i class="fas fa-arrow-left"></i> Retour au Dashboard
         </a>
     </div>

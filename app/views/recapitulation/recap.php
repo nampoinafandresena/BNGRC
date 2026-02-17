@@ -17,7 +17,7 @@
             <div class="panel">
                 <h4>Montant Total des Besoins</h4>
                 <h2 style="font-size:2.5rem;" id="totalAmount"><?= $total ?> Ar</h2>
-                <a href="<?= BASE_URL ?>" class="status-badge critical">Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge critical">Voir les details</a>
                 
             </div>
 
@@ -25,7 +25,7 @@
             <div class="panel">
                 <h4>Montant Besoins satisfaits</h4>
                 <h2 style="font-size:2.5rem; color:var(--gold);" id="distributedAmount"><?= $satisfied ?> Ar</h2>
-                <a href="<?= BASE_URL ?>" class="status-badge delivered">Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge delivered">Voir les details</a>
             </div>
 
         </div>
@@ -42,7 +42,7 @@
                 " id="remainingAmount">
                     <?= $reste ?> Ar
                 </h1>
-                <a href="<?= BASE_URL ?>" class="status-badge transit" >Voir les details</a>
+                <a href="<?= BASE_URL ?>/" class="status-badge transit" >Voir les details</a>
                 
             </div>
 
@@ -123,4 +123,4 @@
     </div> -->
 
 </div>
-<script src="<?= BASE_URL ?>assets/js/script.js"></script>
+<script src="<?= BASE_URL ?>/assets/js/script.js"></script>

@@ -89,7 +89,7 @@
                                 <td class="reste-value" style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
                                 <?php if($b['reste'] > 0): ?>
                                     <td>
-                                        <a href="<?= BASE_URL ?>achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>&prix_unitaire=<?= $b['prix_unitaire'] ?>&id_besoin_ville=<?= $b['id_besoin_ville'] ?>"  
+                                        <a href="<?= BASE_URL ?>/achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>&prix_unitaire=<?= $b['prix_unitaire'] ?>&id_besoin_ville=<?= $b['id_besoin_ville'] ?>"  
                                         class="status-badge transit" 
                                         style="text-decoration: none;">
                                         <i class="fas fa-shopping-cart"></i> Acheter
@@ -121,7 +121,7 @@
 
     function resetDispatch() {
         if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les distributions? Cette action est irréversible.')) {
-            fetch('<?= BASE_URL ?>dispatch/reset', { method: 'POST' })
+            fetch('<?= BASE_URL ?>/dispatch/reset', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -142,7 +142,7 @@
     // ========================================================
     
     function loadDons() {
-        fetch('<?= BASE_URL ?>api/dons')
+        fetch('<?= BASE_URL ?>/api/dons')
             .then(response => response.json())
             .then(dons => {
                 const tableBody = document.getElementById('donsTableBody');
