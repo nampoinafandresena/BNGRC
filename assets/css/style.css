@@ -1,0 +1,232 @@
+/* --- CHARTE GRAPHIQUE BNGRC / STYLE INSTITUTIONNEL --- */
+:root {
+    --royal-red: #8a1c1c;       /* Rouge Terre / Institutionnel */
+    --gold: #c5a059;            /* Doré Prestige */
+    --dark-grey: #2c2c2c;       /* Texte principal */
+    --paper-bg: #f9f7f2;        /* Fond Crème Chaud */
+    --white: #ffffff;
+    --border-color: #e5e5e5;
+    --shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+    background-color: var(--paper-bg);
+    color: var(--dark-grey);
+    font-family: 'Lato', sans-serif;
+    line-height: 1.6;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+    font-weight: 700;
+}
+
+/* --- HEADER --- */
+header {
+    background: var(--white);
+    border-bottom: 3px solid var(--royal-red);
+    padding: 1rem 5%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 15px rgba(0,0,0,0.05);
+}
+
+.brand { display: flex; align-items: center; gap: 20px; }
+.logo-box {
+    width: 55px; height: 55px;
+    background: var(--royal-red);
+    color: var(--gold);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Playfair Display', serif; font-weight: bold; font-size: 1.4rem;
+    border: 1px solid var(--gold);
+}
+
+.brand-text h1 { font-size: 1.6rem; color: var(--dark-grey); }
+.brand-text p { font-size: 0.75rem; text-transform: uppercase; letter-spacing: 2px; color: var(--royal-red); font-weight: 700; }
+
+nav ul { display: flex; gap: 25px; list-style: none; }
+nav a { 
+    text-decoration: none; color: var(--dark-grey); 
+    font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px;
+    transition: 0.3s; padding-bottom: 5px; border-bottom: 2px solid transparent;
+}
+nav a:hover { color: var(--royal-red); border-bottom-color: var(--royal-red); }
+
+/* --- CONTENEURS --- */
+.container { max-width: 1200px; margin: 0 auto; padding: 40px 20px; }
+.section-title { text-align: center; margin-bottom: 40px; }
+.section-title h2 { font-size: 2.2rem; color: var(--royal-red); margin-bottom: 10px; }
+.section-title::after {
+    content: ""; display: block; width: 50px; height: 2px; background: var(--gold); margin: 15px auto;
+}
+
+/* --- TABLEAUX & PANELS --- */
+.city-block {
+    background: var(--white); border: 1px solid var(--border-color);
+    margin-bottom: 30px; box-shadow: var(--shadow);
+}
+.city-header {
+    background: var(--dark-grey); color: var(--white);
+    padding: 15px 25px; display: flex; justify-content: space-between; align-items: center;
+}
+.city-content { padding: 25px; display: grid; grid-template-columns: 1fr 1fr; gap: 30px; }
+
+table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+th { text-align: left; padding: 12px; background: #f8f8f8; font-size: 0.75rem; text-transform: uppercase; color: #777; border-bottom: 1px solid #eee; }
+td { padding: 12px; border-bottom: 1px solid #eee; font-size: 0.9rem; }
+
+/* --- BOUTONS & FORMULAIRES --- */
+.btn-gold {
+    background: var(--gold); color: white; padding: 12px 25px;
+    border: none; text-transform: uppercase; font-weight: 700;
+    cursor: pointer; transition: 0.3s; font-family: 'Lato';
+}
+.btn-gold:hover { background: #b08d4b; }
+
+input, select, textarea {
+    width: 100%; padding: 12px; border: 1px solid #ddd;
+    font-family: 'Lato'; outline: none; transition: 0.3s;
+}
+input:focus { border-color: var(--gold); }
+
+.status-badge { 
+    padding: 4px 8px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border-radius: 2px;
+}
+.critical { background: var(--royal-red); color: white; }
+.delivered { background: #16a34a; color: white; }
+
+/* --- FOOTER --- */
+footer {
+    background: var(--dark-grey); color: white;
+    padding: 40px 20px; text-align: center; border-top: 3px solid var(--gold);
+}
+
+
+
+/* --- CHARTE GRAPHIQUE BNGRC --- */
+:root {
+    --royal-red: #8a1c1c;       /* Rouge Institutionnel */
+    --gold: #c5a059;            /* Doré Prestige */
+    --dark-grey: #2c2c2c;       /* Texte et En-têtes */
+    --paper-bg: #f9f7f2;        /* Fond de page chaud */
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--paper-bg);
+    color: var(--dark-grey);
+    font-family: 'Lato', sans-serif;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* --- CONTENEUR ET TITRES --- */
+.container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
+
+.section-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.section-title h2 { font-size: 2.5rem; color: var(--royal-red); }
+.section-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin: 20px auto 0;
+}
+
+/* --- BLOC VILLE (CITY BLOCK) --- */
+.city-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
+
+.city-block {
+    background: var(--white);
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    margin-bottom: 30px;
+}
+
+.city-header {
+    background: var(--dark-grey);
+    color: var(--white);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--gold);
+}
+
+.city-content { 
+    padding: 30px; 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 40px; 
+}
+
+@media (max-width: 900px) { .city-content { grid-template-columns: 1fr; } }
+
+/* --- PANNEAUX ET TABLEAUX --- */
+.panel h4 { 
+    color: var(--royal-red); 
+    border-bottom: 1px solid #ddd; 
+    padding-bottom: 10px; 
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { text-align: left; padding: 12px; background: #f4f4f4; color: #555; font-size: 0.75rem; text-transform: uppercase; }
+td { padding: 12px; border-bottom: 1px solid #eee; }
+
+/* --- BADGES DE STATUT --- */
+.status-badge { 
+    padding: 5px 12px; 
+    border-radius: 4px; 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    text-transform: uppercase;
+}
+.status-badge.critical { background: var(--royal-red); color: white; }
+.status-badge.delivered { background: #16a34a; color: white; }
+.status-badge.transit { background: #d97706; color: white; }
+
+/* --- SIMULATEUR --- */
+.donation-sim-box {
+    background: var(--white);
+    border: 2px solid var(--gold);
+    padding: 40px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.sim-form { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+.sim-input { padding: 10px; border: 1px solid #ccc; width: 200px; }
+
+.btn-gold {
+    background: var(--gold);
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.sim-result {
+    display: none; 
+    text-align: left;
+    margin-top: 30px;
+    background: var(--paper-bg);
+    padding: 20px;
+    border-left: 4px solid var(--royal-red);
+}

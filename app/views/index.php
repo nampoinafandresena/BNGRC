@@ -1,0 +1,385 @@
+<main class="container">
+    <div class="section-title">
+        <h2>Suivi National des Distributions</h2>
+        <p style="margin-top: 15px; font-style: italic; color: #666;">Données centralisées en temps réel</p>
+    </div>
+
+    <div class="donation-sim-box">
+        <h3 style="color: var(--royal-red); margin-bottom: 20px;">Suivi des Dons en Temps Réel</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background-color: #f0f8ff;">
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">ID</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Reçu</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Distribué</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Restant</th>
+                </tr>
+            </thead>
+            <tbody id="donsTableBody">
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px; color: #999;">⏳ Chargement des dons...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="donation-sim-box">
+        <h3 style="color: var(--royal-red); margin-bottom: 20px;">Simulateur de Distribution d'Aide</h3>
+        <p style="margin-bottom: 30px; font-size: 0.95rem;">
+            Choisissez une stratégie de distribution : par ordre chronologique ou par priorité minimale.
+        </p>
+        
+        <div class="sim-form">
+            <button class="btn-gold" onclick="simulateDistribution('date')">༄ Simuler par date</button>
+            <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">༄ Simuler par min</button>
+            <button class="btn-gold" onclick="simulateDistribution('proportion')" style="background: #dfbf8eff;">༄ Simuler proportionnellement</button>
+            <button class="btn-gold" onclick="resetDispatch()"> Réinitialiser distributions</button>
+            <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
+            <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
+        </div>
+
+        <div id="simResult" class="sim-result" style="display: none;">
+            <h4 style="margin-bottom: 15px;">Résultats de la Simulation :</h4>
+            <div id="simContent"></div>
+        </div>
+    </div>
+
+    <div class="city-grid">
+        <?php 
+        $villes = [];
+        foreach($stats as $s) {
+            $villes[$s['ville_nom']]['region'] = $s['region_nom'];
+            $villes[$s['ville_nom']]['besoins'][] = $s;
+        }
+
+        foreach($villes as $nomVille => $infos): 
+        ?>
+        <div class="city-block">
+            <div class="city-header">
+                <div>
+                    <h3 style="margin: 0; font-size: 1.4rem;"><?= htmlspecialchars($nomVille) ?></h3>
+                    <small style="opacity: 0.8; font-weight: 300;"><?= htmlspecialchars($infos['region']) ?></small>
+                </div>
+                <span class="status-badge <?= (count($infos['besoins']) > 2) ? 'critical' : 'transit' ?>">
+                    <?= (count($infos['besoins']) > 2) ? 'Urgence Haute' : 'Vigilance' ?>
+                </span>
+            </div>
+            
+            <div class="city-content">
+                <div class="panel">
+                    <h4><i class="fas fa-bullseye" style="margin-right: 10px;"></i> État des Besoins</h4>
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Article</th>
+                                <th>Demandé</th>
+                                <th>Reçu</th>
+                                <th>Reste</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <?php foreach($infos['besoins'] as $b): ?>
+                            <tr data-besoin-id="<?= $b['id_besoin_ville'] ?>">
+                                <td><?= htmlspecialchars($b['article_label']) ?></td>
+                                <td><strong><?= number_format($b['quantite_demandee'], 0) ?></strong></td>
+                                <td class="quantite-recue" style="color: green;"><?= number_format($b['quantite_recue'], 0) ?></td>
+                                <td class="reste-value" style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
+                                <?php if($b['reste'] > 0): ?>
+                                    <td>
+                                        <a href="<?= BASE_URL ?>/achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>&prix_unitaire=<?= $b['prix_unitaire'] ?>&id_besoin_ville=<?= $b['id_besoin_ville'] ?>"  
+                                        class="status-badge transit" 
+                                        style="text-decoration: none;">
+                                        <i class="fas fa-shopping-cart"></i> Acheter
+                                        </a>
+                                    </td>
+                                <?php endif; ?>
+                            </tr>
+                            <?php endforeach; ?>
+                        </tbody>
+                    </table>
+                </div>
+
+                <div class="panel">
+                    <h4><i class="fas fa-info-circle" style="margin-right: 10px;"></i> Résumé Logistique</h4>
+                    <div style="padding: 15px; background: #f8f9fa; border-radius: 5px;">
+                        <p style="font-size: 0.9rem;">Dernière mise à jour : <span id="update-time"><?= date('d/m/Y H:i') ?></span></p>
+                        <p style="font-size: 0.8rem; color: #666; margin-top: 10px;">
+                            Les distributions sont calculées selon la stratégie choisie.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <?php endforeach; ?>
+    </div>
+</main>
+
+<script>
+
+    function resetDispatch() {
+        if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les distributions? Cette action est irréversible.')) {
+            fetch('<?= BASE_URL ?>/dispatch/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Distributions réinitialisées avec succès!');
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la réinitialisation: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur lors de la réinitialisation: ' + error.message);
+                });
+        }
+    }
+
+    // ========================================================
+    // CHARGEMENT DES DONS EN TEMPS RÉEL
+    // ========================================================
+    
+    function loadDons() {
+        fetch('<?= BASE_URL ?>/api/dons')
+            .then(response => response.json())
+            .then(dons => {
+                const tableBody = document.getElementById('donsTableBody');
+                
+                if (dons.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">Aucun don enregistré</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = dons.map(don => `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 10px;">#${don.id}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">${don.donateur}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">${don.article}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>${don.quantite_recue}</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: green;"><strong>${don.quantite_distribuee}</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: ${don.quantite_restante > 0 ? 'var(--royal-red)' : '#28a745'}; font-weight: bold;">${don.quantite_restante}</td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des dons:', error);
+                document.getElementById('donsTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--royal-red);">❌ Erreur lors du chargement</td></tr>';
+            });
+    }
+    
+    // Charger les dons au chargement de la page
+    loadDons();
+    
+    // Recharger les dons toutes les 5 secondes pour voir les changements en temps réel
+    setInterval(loadDons, 5000);
+
+
+    let currentProposals = []; // Stocke les propositions actuelles
+
+    
+    // Sauvegarder l'état initial
+    function saveOriginalState() {
+        originalState = [];
+        document.querySelectorAll('tr[data-besoin-id]').forEach(row => {
+            originalState.push({
+                id: row.dataset.besoinId,
+                recue: row.querySelector('.quantite-recue').textContent,
+                reste: row.querySelector('.reste-value').textContent
+            });
+        });
+    }
+    
+    // Restaurer l'état initial
+    function restoreOriginalState() {
+        originalState.forEach(item => {
+            const row = document.querySelector(`tr[data-besoin-id="${item.id}"]`);
+            if (row) {
+                row.querySelector('.quantite-recue').textContent = item.recue;
+                row.querySelector('.reste-value').textContent = item.reste;
+            }
+        });
+    }
+
+    // Appliquer l'état simulé
+    function applySimulatedState(simulatedStats) {
+        simulatedStats.forEach(stat => {
+            const row = document.querySelector(`tr[data-besoin-id="${stat.id_besoin_ville}"]`);
+            if (row) {
+                row.querySelector('.quantite-recue').textContent = number_format(stat.quantite_recue);
+                row.querySelector('.reste-value').textContent = number_format(stat.reste);
+            }
+        });
+    }
+    
+    function number_format(value) {
+        return new Intl.NumberFormat('fr-FR').format(Math.round(value));
+    }
+    
+    function simulateDistribution(type) {
+        saveOriginalState();
+        const resultBox = document.getElementById('simResult');
+        const simContent = document.getElementById('simContent');
+        const validateBtn = document.getElementById('validateBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        
+        simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
+        resultBox.style.display = 'block';
+        
+        var endpoint;
+        switch(type) {
+            case "minimum":
+                endpoint = '<?= BASE_URL ?>/dispatch/preview-minimum';
+                break;
+            case "date":
+                endpoint = '<?= BASE_URL ?>/dispatch/preview';
+                break;
+            case "proportion":
+                endpoint = '<?= BASE_URL ?>/dispatch/preview-proportion';
+                break;
+            default:
+                endpoint = '<?= BASE_URL ?>/dispatch/preview';
+        }
+        
+        fetch(endpoint)
+        .then(response => response.json())
+        .then(data => {
+            currentProposals = data.propositions;
+            currentSimulationType = type;
+            
+            // Appliquer l'état simulé
+            if (data.simulated_state) {
+                applySimulatedState(data.simulated_state);
+            }
+            
+            var typeLabel;
+            if (type === 'minimum') {
+                typeLabel = 'Priorité minimale';
+            } else if (type === 'proportion') {
+                typeLabel = 'Distribution proportionnelle';
+            } else {
+                typeLabel = 'Par date';
+            }
+            
+            let statsHtml = `
+            <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
+            <p><strong>📊 Propositions de Distribution (${typeLabel})</strong></p>
+            <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
+            <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
+            <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
+            </div>
+            `;
+            
+            if (data.propositions.length > 0) {
+                statsHtml += `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                <tr style="background-color: #f0f8ff;">
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Don</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Quantité</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Destination</th>
+                </tr>
+                </thead>
+                <tbody>
+                ${data.propositions.map(prop => `
+                <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">#${prop.id_don}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.donateur}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.article_label}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.quantite_attribuee}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.ville_nom}</td>
+                </tr>
+                `).join('')}
+                </tbody>
+                </table>
+                `;
+            } else {
+                statsHtml += '<p style="color: var(--royal-red);">ℹ️ Aucune proposition disponible.</p>';
+            }
+            
+            simContent.innerHTML = statsHtml;
+            validateBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
+        });
+    }
+    
+    function validateDistribution() {
+        if (currentProposals.length === 0) {
+            alert('Aucune proposition à valider.');
+            return;
+        }
+
+        const validateBtn = document.getElementById('validateBtn');
+        const simContent = document.getElementById('simContent');
+        
+        validateBtn.disabled = true;
+        simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
+        
+        var endpoint;
+        if (currentSimulationType === 'minimum') {
+            endpoint = '<?= BASE_URL ?>/dispatch/validate-minimum';
+        } else if (currentSimulationType === 'proportion') {
+            endpoint = '<?= BASE_URL ?>/dispatch/validate-proportion';
+        } else {
+            endpoint = '<?= BASE_URL ?>/dispatch/validate';
+        }
+        
+        fetch(endpoint, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' }
+        })
+        .then(response => response.json())
+        .then(data => {
+            validateBtn.disabled = false;
+            
+            if (data.success) {
+                let resultHtml = `
+                    <div style="padding: 15px; background: #d4edda; border-radius: 5px; border-left: 4px solid #28a745; margin-bottom: 20px;">
+                        <p><strong style="color: #155724;">✅ Validation réussie!</strong></p>
+                        <p>Attributions créées: <strong>${data.attributions_creees}</strong></p>
+                        <p>Quantité totale attribuée: <strong>${data.quantite_totale_attribuee}</strong></p>
+                    </div>
+                `;
+                simContent.innerHTML = resultHtml;
+                document.getElementById('validateBtn').style.display = 'none';
+                document.getElementById('cancelBtn').style.display = 'none';
+                currentProposals = [];
+                
+                setTimeout(() => {
+                    location.reload();
+                }, 2000);
+            } else {
+                let errorHtml = `
+                    <div style="padding: 15px; background: #f8d7da; border-radius: 5px; border-left: 4px solid var(--royal-red);">
+                        <p><strong style="color: var(--royal-red);">❌ Erreur lors de la validation</strong></p>
+                        <p>${data.erreurs.join('<br>')}</p>
+                    </div>
+                `;
+                simContent.innerHTML = errorHtml;
+            }
+        })
+        .catch(error => {
+            validateBtn.disabled = false;
+            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
+        });
+    }
+
+    function cancelSimulation() {
+        restoreOriginalState();
+        document.getElementById('simResult').style.display = 'none';
+        document.getElementById('validateBtn').style.display = 'none';
+        document.getElementById('cancelBtn').style.display = 'none';
+        currentProposals = [];
+        currentSimulationType = null;
+    }
+
+    // Initialiser au chargement
+    saveOriginalState();
+</script>

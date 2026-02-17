@@ -1,0 +1,12 @@
+.vscode/
+vendor/
+composer.lock
+.vagrant/
+.runway-creds.json
+
+app/config/bootstrap.php
+app/config/config.php
+.htaccess
+public/.htaccess
+public/index.php
+index.php

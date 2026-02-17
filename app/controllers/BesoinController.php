@@ -1,0 +1,80 @@
+<?php
+
+namespace app\controllers;
+
+use app\models\BesoinVille;
+use app\models\Ville;
+use BackedEnum;
+use flight;
+use flight\Engine;
+
+
+class BesoinController {
+
+	// protected Engine $app;
+
+	// public function __construct($app) {
+	// 	$this->app = $app;
+	// }
+
+    protected $db;
+
+	public function __construct($db) {
+		$this->db = $db;
+	}
+
+
+    public static function showForm() {
+        $db = Flight::db();
+        $villes = Ville::readAll($db);
+        $articles = ArticleController::getAll();
+        Flight::render('model', [
+            'page' => 'besoin/formulaire',
+            'villes' => $villes,
+            'articles' => $articles
+        ]);
+    }
+
+    public static function insert() {
+        $data = Flight::request()->data;
+
+        $id_ville = $data["id_ville"];
+        $id_article = $data["id_article"];
+        $quantite = $data["quantite"];
+
+        $model = new BesoinVille(Flight::db());
+        $model->setIdVille($id_ville);
+        $model->setIdArticle($id_article);
+        $model->setQuantiteDemandee($quantite);
+        $model->create();
+        Flight::redirect( "/" );
+
+    }
+
+    public static function calcValeurMonetaire($besoin) {
+        $pu = $besoin->getPrixUnitaire();
+        $quantite = $besoin->getQuantiteDemandee();
+        return $pu * $quantite;
+    }
+
+    public static function getAll() {
+        $db = Flight::db();
+        $list = BesoinVille::readAll($db);
+        return $list;
+    }
+
+    public function getBesoinsSatisfaits()
+    {
+        $query = $this->db->prepare(
+            "SELECT bv.* 
+             FROM BNGRC_besoin_ville bv
+             where bv.quantite_demandee = COALESCE(
+                (SELECT SUM(quantite_attribuee) FROM BNGRC_distribution WHERE id_besoin_ville = bv.id), 0
+             )
+             ORDER BY bv.date_demande ASC"
+        );
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+}
+?>
