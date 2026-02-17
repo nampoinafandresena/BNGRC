@@ -11,7 +11,8 @@
         </p>
         
         <div class="sim-form">
-            <button class="btn-gold" onclick="simulateDistribution()">📊 Simuler</button>
+            <button class="btn-gold" onclick="simulateDistribution()"> Simuler par date</button>
+            <button></button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
         </div>
