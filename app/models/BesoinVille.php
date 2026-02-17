@@ -185,18 +185,20 @@ class BesoinVille
 
     public function getEtatGlobalVilles() {
         $sql = "SELECT 
+                        V.id as id_ville,
                         V.nom AS ville_nom, 
                         R.nom AS region_nom,
+                        A.id AS id_article,
                         A.label AS article_label, 
                         A.prix_unitaire,
                         BV.quantite_demandee,
-                        COALESCE(SUM(D.quantite_attribuee), 0) AS quantite_recue,
-                        (BV.quantite_demandee - COALESCE(SUM(D.quantite_attribuee), 0)) AS reste
+                        COALESCE(SUM(AC.quantite), 0) AS quantite_recue,
+                        (BV.quantite_demandee - COALESCE(SUM(AC.quantite), 0)) AS reste
                     FROM BNGRC_besoin_ville BV
                     JOIN BNGRC_ville V ON BV.id_ville = V.id
                     JOIN BNGRC_region R ON V.id_region = R.id
                     JOIN BNGRC_article A ON BV.id_article = A.id
-                    LEFT JOIN BNGRC_distribution D ON D.id_besoin_ville = BV.id
+                    LEFT JOIN BNGRC_achat AC ON AC.id_article = A.id AND AC.id_ville = V.id
                     GROUP BY BV.id, V.nom, R.nom, A.label, A.prix_unitaire, BV.quantite_demandee
                     ORDER BY R.nom, V.nom ASC;";
 

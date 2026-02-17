@@ -191,4 +191,27 @@ class DonCollecte
         $query->execute([':id_don' => $id_don]);
         return $query->fetch(PDO::FETCH_ASSOC)['reste'];
     }
+
+    public function getDonRestant($id_article)
+    {
+        // Calcule le total des dons reçus pour cet article
+        $donQuery = $this->db->prepare(
+            "SELECT SUM(quantite_recue) as total_dons FROM BNGRC_don_collecte WHERE id_article = :id_article"
+        );
+        $donQuery->execute([':id_article' => $id_article]);
+        $donResult = $donQuery->fetch(PDO::FETCH_ASSOC);
+        $totalDons = $donResult['total_dons'] ?? 0;
+
+        // Calcule le total des distributions faites pour les dons de cet article
+        $distQuery = $this->db->prepare(
+            "SELECT SUM(d.quantite_attribuee) as total_distributions FROM BNGRC_distribution d
+             INNER JOIN BNGRC_don_collecte dc ON d.id_don = dc.id
+             WHERE dc.id_article = :id_article"
+        );
+        $distQuery->execute([':id_article' => $id_article]);
+        $distResult = $distQuery->fetch(PDO::FETCH_ASSOC);
+        $totalDistributions = $distResult['total_distributions'] ?? 0;
+
+        return $totalDons - $totalDistributions;
+    }
 }
