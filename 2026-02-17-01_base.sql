@@ -126,7 +126,7 @@ CREATE TABLE BNGRC_config (
 -- -- Insertion d'une configuration par défaut
 -- INSERT INTO BNGRC_config (frais_achat)
 -- VALUES (0.10); -- 10% de frais d'achat par défaut
--- -- INSERT INTO BNGRC_config (frais_achat) VALUES (10.00);
+INSERT INTO BNGRC_config (frais_achat) VALUES (10.00);
 
 
 
