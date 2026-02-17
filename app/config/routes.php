@@ -68,6 +68,13 @@ $router->group('', function(Router $router) use ($app) {
 
 	$router->group('/api', function() use ($router) {
 		$router->get('/recap', [DashboardController::class, 'getRecapAjax']);
+		$router->get('/dons', function() {
+			$app = Flight::app();
+			$donController = new DonController($app);
+			$dons = $donController->getDonsWithDistributions();
+			header('Content-Type: application/json');
+			echo json_encode($dons);
+		});
 		$router->get('/users', [ ApiExampleController::class, 'getUsers' ]);
 		$router->get('/users/@id:[0-9]', [ ApiExampleController::class, 'getUser' ]);
 		$router->post('/users/@id:[0-9]', [ ApiExampleController::class, 'updateUser' ]);
@@ -101,6 +108,13 @@ $router->group('', function(Router $router) use ($app) {
 			echo json_encode($result);
 		});
 
+		$router->post('/reset', function() {
+			$app = Flight::app();
+			$dispatchController = new DispatchController($app);
+			$result = $dispatchController->ResetDispatch();
+			header('Content-Type: application/json');
+			echo json_encode($result);
+		});
 		// Nouvelles routes (minimum)
         $router->get('/preview-minimum', function() {
             $app = Flight::app();

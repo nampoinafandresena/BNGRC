@@ -293,6 +293,24 @@ class DispatchController
         return $this->getProposedDistributions();
     }
 
+    public function ResetDispatch()
+    {
+        try {
+            $query = Flight::db()->prepare("DELETE FROM BNGRC_distribution");
+            $query->execute();
+            return [
+                'success' => true,
+                'message' => 'Toutes les distributions ont été réinitialisées'
+            ];
+        } catch (\Exception $e) {
+            return [
+                'success' => false,
+                'message' => 'Erreur lors de la réinitialisation: ' . $e->getMessage()
+            ];
+        }
+        
+    }
+
     /**
      * Valide et sauvegarde les distributions proposées (Persist)
      */

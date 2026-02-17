@@ -5,6 +5,27 @@
     </div>
 
     <div class="donation-sim-box">
+        <h3 style="color: var(--royal-red); margin-bottom: 20px;">🎁 Suivi des Dons en Temps Réel</h3>
+        <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
+            <thead>
+                <tr style="background-color: #f0f8ff;">
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">ID</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Reçu</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Distribué</th>
+                    <th style="border: 1px solid #ddd; padding: 10px; text-align: right;">Restant</th>
+                </tr>
+            </thead>
+            <tbody id="donsTableBody">
+                <tr>
+                    <td colspan="6" style="text-align: center; padding: 20px; color: #999;">⏳ Chargement des dons...</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="donation-sim-box">
         <h3 style="color: var(--royal-red); margin-bottom: 20px;">Simulateur de Distribution d'Aide</h3>
         <p style="margin-bottom: 30px; font-size: 0.95rem;">
             Choisissez une stratégie de distribution : par ordre chronologique ou par priorité minimale.
@@ -13,6 +34,7 @@
         <div class="sim-form">
             <button class="btn-gold" onclick="simulateDistribution('date')">📅 Simuler par date</button>
             <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">⚡ Simuler par min</button>
+            <button class="btn-gold" onclick="resetDispatch()"> Réinitialiser distributions</button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
         </div>
@@ -95,6 +117,86 @@
 </main>
 
 <script>
+
+    function resetDispatch() {
+        if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les distributions? Cette action est irréversible.')) {
+            fetch('/dispatch/reset', { method: 'POST' })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert('Distributions réinitialisées avec succès!');
+                        location.reload();
+                    } else {
+                        alert('Erreur lors de la réinitialisation: ' + data.message);
+                    }
+                })
+                .catch(error => {
+                    alert('Erreur lors de la réinitialisation: ' + error.message);
+                });
+        }
+    }
+
+    // ========================================================
+    // CHARGEMENT DES DONS EN TEMPS RÉEL
+    // ========================================================
+    
+    function loadDons() {
+        fetch('/api/dons')
+            .then(response => response.json())
+            .then(dons => {
+                const tableBody = document.getElementById('donsTableBody');
+                
+                if (dons.length === 0) {
+                    tableBody.innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: #999;">Aucun don enregistré</td></tr>';
+                    return;
+                }
+                
+                tableBody.innerHTML = dons.map(don => `
+                    <tr>
+                        <td style="border: 1px solid #ddd; padding: 10px;">#${don.id}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">${don.donateur}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px;">${don.article}</td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right;"><strong>${don.quantite_recue}</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: green;"><strong>${don.quantite_distribuee}</strong></td>
+                        <td style="border: 1px solid #ddd; padding: 10px; text-align: right; color: ${don.quantite_restante > 0 ? 'var(--royal-red)' : '#28a745'}; font-weight: bold;">${don.quantite_restante}</td>
+                    </tr>
+                `).join('');
+            })
+            .catch(error => {
+                console.error('Erreur lors du chargement des dons:', error);
+                document.getElementById('donsTableBody').innerHTML = '<tr><td colspan="6" style="text-align: center; padding: 20px; color: var(--royal-red);">❌ Erreur lors du chargement</td></tr>';
+            });
+    }
+    
+    // Charger les dons au chargement de la page
+    loadDons();
+    
+    // Recharger les dons toutes les 5 secondes pour voir les changements en temps réel
+    setInterval(loadDons, 5000);
+
+    /*
+     * ========================================================
+     * LOGIQUE DE SIMULATION ET VALIDATION DES DISTRIBUTIONS
+     * ========================================================
+     * 
+     * ANCIEN COMPORTEMENT (COMMENTÉ) :
+     * - Route unique : /dispatch/simulate
+     * - Sauvegardait directement les distributions
+     * - Rafraîchissait la page après 2 secondes automatiquement
+     * Inconvénient : pas de contrôle utilisateur, pas de preview
+     * 
+     * NOUVEAU COMPORTEMENT :
+     * - Deux routes séparées : /dispatch/preview et /dispatch/validate
+     * - /preview : affiche les propositions (sans sauvegarder)
+     * - Utilisateur peut voir le résultat et décider
+     * - Si validation : /validate persiste les données
+     * - Boutons : Simuler, Valider, Annuler
+     * ========================================================
+     */
+    
+    let currentProposals = []; // Stocke les propositions actuelles
+
+    function simulateDistribution() {
     let currentProposals = [];
     let currentSimulationType = null;
     let originalState = null;
