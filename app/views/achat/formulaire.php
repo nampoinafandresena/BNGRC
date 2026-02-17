@@ -6,6 +6,8 @@
             <input type="hidden" name="id_ville" value="<?= $params->id_ville ?>">
             <input type="hidden" name="id_article" value="<?= $params->id_article ?>">
             <input type="hidden" name="prix_unitaire" value="<?= $params->prix_unitaire ?>">
+            <input type="hidden" name="id_besoin_ville" value="<?= $params->id_besoin_ville ?>">
+
 
             <div class="mb-3">
                 <label>Quantité maximale nécessaire : <strong><?= $params->reste ?></strong></label>
@@ -15,13 +17,18 @@
             </div>
 
             <?php 
-                $prixUnitaire = 45000; // Exemple: à récupérer via ton ArticleModel
-                $fraisPourcent = 10;   // Exemple: à récupérer via ton ConfigModel
+                $prixUnitaire = $params->prix_unitaire; // Récupéré depuis les paramètres
+                // Vérifier que $frais est défini, sinon le récupérer
+                if (empty($frais)) {
+                    $config = new \app\models\Config(\Flight::app()->db());
+                    $frais = $config->getFraisConfig() ?? 0;
+                }
+                $fraisPourcent = $frais * 100; // Convertir en pourcentage
             ?>
 
             <div style="background: #f4f4f4; padding: 20px; margin-top: 20px; border-radius: 5px;">
-                <p>Prix Unitaire : <span id="pu"><?= $prixUnitaire ?></span> Ar</p>
-                <p>Frais d'achat : <span><?= $fraisPourcent ?></span>%</p>
+                <p>Prix Unitaire : <span id="pu"><?= number_format($prixUnitaire, 0, ',', ' ') ?></span> Ar</p>
+                <p>Frais d'achat : <span><?= number_format($fraisPourcent, 2, ',', ' ') ?></span>%</p>
                 <hr>
                 <h4 style="color: var(--royal-red);">Total à payer : <span id="totalAffichage">0</span> Ar</h4>
             </div>

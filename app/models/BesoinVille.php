@@ -189,6 +189,7 @@ class BesoinVille
      */
     public function getEtatGlobalVilles() {
         $sql = "SELECT 
+                        BV.id as id_besoin_ville,
                         V.id as id_ville,
                         V.nom AS ville_nom, 
                         R.nom AS region_nom,
@@ -203,7 +204,7 @@ class BesoinVille
                     JOIN BNGRC_region R ON V.id_region = R.id
                     JOIN BNGRC_article A ON BV.id_article = A.id
                     LEFT JOIN BNGRC_distribution D ON D.id_besoin_ville = BV.id
-                    GROUP BY BV.id, V.nom, R.nom, A.label, A.prix_unitaire, BV.quantite_demandee
+                    GROUP BY BV.id, V.id, V.nom, R.nom, A.id, A.label, A.prix_unitaire, BV.quantite_demandee
                     ORDER BY R.nom, V.nom ASC;";
 
         $stmt = $this->db->prepare($sql);
