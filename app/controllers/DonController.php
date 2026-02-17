@@ -48,5 +48,25 @@ class DonController {
 
     }
 
+    public function getDonsWithDistributions() {
+        $db = Flight::db();
+        $query = $db->prepare(
+            "SELECT 
+                dc.id,
+                dc.donateur,
+                a.label as article,
+                dc.quantite_recue,
+                COALESCE(SUM(d.quantite_attribuee), 0) as quantite_distribuee,
+                (dc.quantite_recue - COALESCE(SUM(d.quantite_attribuee), 0)) as quantite_restante
+            FROM BNGRC_don_collecte dc
+            JOIN BNGRC_article a ON dc.id_article = a.id
+            LEFT JOIN BNGRC_distribution d ON dc.id = d.id_don
+            GROUP BY dc.id, dc.donateur, a.label, dc.quantite_recue
+            ORDER BY dc.date_reception DESC"
+        );
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
 }
 ?>
