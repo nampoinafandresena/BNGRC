@@ -7,13 +7,13 @@
     
     <link href="https://fonts.googleapis.com/css2?family=Lato:wght@300;400;700&family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <link rel="stylesheet" href="<?= BASE_URL ?>/assets/css/style.css">
+    <link rel="stylesheet" href="<?= BASE_URL ?>assets/css/style.css">
 </head>
 <body>
 
   <header>
       <div class="brand">
-          <img src="<?= BASE_URL ?>/assets/images/armoirie.png" alt="logo" class="me-2" style="height:44px;">
+          <img src="<?= BASE_URL ?>assets/images/armoirie.png" alt="logo" class="me-2" style="height:44px;">
           <div class="brand-text">
               <h1>BNGRC</h1>
               <p>Repoblikan'i Madagasikara</p>
@@ -21,11 +21,11 @@
       </div>
       <nav>
           <ul>
-            <li><a href="<?= BASE_URL ?>/">Dashboard</a></li>
-            <li><a href="<?= BASE_URL ?>/don/formulaire">Saisie de Don </a></li>
-            <li><a href="<?= BASE_URL ?>/besoin/formulaire">Formuler un besoin</a></li>
-            <li><a href="<?= BASE_URL ?>/recap">Recapitulation</a></li>
-            <li><a href="<?= BASE_URL ?>/achat/liste">Liste des achats</a></li>
+            <li><a href="<?= BASE_URL ?>">Dashboard</a></li>
+            <li><a href="<?= BASE_URL ?>don/formulaire">Saisie de Don </a></li>
+            <li><a href="<?= BASE_URL ?>besoin/formulaire">Formuler un besoin</a></li>
+            <li><a href="<?= BASE_URL ?>recap">Recapitulation</a></li>
+            <li><a href="<?= BASE_URL ?>achat/liste">Liste des achats</a></li>
           </ul>
       </nav>
   </header>
