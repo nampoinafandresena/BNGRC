@@ -1,4 +1,9 @@
 <?php
+// echo phpversion();
+// die();
+
+// echo "INDEX OK";
+// die();
 
 /*
  * FlightPHP Framework
@@ -23,6 +28,11 @@
                                                               ~ -...0..~. ____
    Cessna 402  (Wings)
    by Dick Williams, rjw1@tyrell.net
-*/
+   */
+
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
 $ds = DIRECTORY_SEPARATOR;
-require(__DIR__. $ds . '..' . $ds . 'app' . $ds . 'config' . $ds . 'bootstrap.php');
+
+require(__DIR__. $ds . 'app' . $ds . 'config' . $ds . 'bootstrap.php');
