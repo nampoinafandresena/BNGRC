@@ -185,6 +185,18 @@ class AchatController {
         $result = $this->saveAchat($achatData);
 
         if ($result['success']) {
+            // --- ATTRIBUTION AUTOMATIQUE : Créer une distribution pour le besoin-ville ---
+            $distribution = new \app\models\Distribution($this->db);
+            $distribution
+                ->setIdDon(null) // Pas de don, c'est un achat
+                ->setIdBesoinVille($data->id_besoin_ville)
+                ->setQuantiteAttribuee($data->quantite);
+            
+            if (!$distribution->create()) {
+                Flight::halt(500, "L'achat a été créé mais l'attribution au besoin a échoué.");
+                return;
+            }
+
             Flight::redirect('/'); // Retour au dashboard
         } else {
             Flight::halt(500, "Erreur lors de l'enregistrement de l'achat.");

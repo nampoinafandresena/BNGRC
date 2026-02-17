@@ -11,7 +11,8 @@
         </p>
         
         <div class="sim-form">
-            <button class="btn-gold" onclick="simulateDistribution()">📊 Simuler</button>
+            <button class="btn-gold" onclick="simulateDistribution()"> Simuler par date</button>
+            <button></button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
         </div>
@@ -66,7 +67,7 @@
                                 <td style="color: var(--royal-red); font-weight: bold;"><?= number_format($b['reste'], 0) ?></td>
                                 <?php if($b['reste'] > 0): ?>
                                     <td>
-                                        <a href="<?= BASE_URL ?>/achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>" 
+                                        <a href="<?= BASE_URL ?>achat/formulaire?id_ville=<?= $b['id_ville'] ?>&id_article=<?= $b['id_article'] ?>&reste=<?= $b['reste'] ?>" 
                                         class="status-badge transit" 
                                         style="text-decoration: none;">
                                         <i class="fas fa-shopping-cart"></i> Acheter

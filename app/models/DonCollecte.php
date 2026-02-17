@@ -214,4 +214,34 @@ class DonCollecte
 
         return $totalDons - $totalDistributions;
     }
+
+    /**
+     * Calcule l'argent restant disponible pour les achats
+     * = (Montant total des dons en valeur) - (Montant argent utilisé dans les achats)
+     */
+    public function getArgentRestant($id_article)
+    {
+        // Calcule la valeur totale des dons reçus pour cet article
+        $donValueQuery = $this->db->prepare(
+            "SELECT COALESCE(SUM(dc.quantite_recue * a.prix_unitaire), 0) as total_valeur_dons 
+             FROM BNGRC_don_collecte dc
+             JOIN BNGRC_article a ON dc.id_article = a.id
+             WHERE dc.id_article = :id_article"
+        );
+        $donValueQuery->execute([':id_article' => $id_article]);
+        $donValueResult = $donValueQuery->fetch(PDO::FETCH_ASSOC);
+        $totalValeurDons = $donValueResult['total_valeur_dons'] ?? 0;
+
+        // Calcule le total de l'argent déjà utilisé dans les achats pour cet article
+        $achatQuery = $this->db->prepare(
+            "SELECT COALESCE(SUM(montant_argent_utilise), 0) as total_argent_utilise 
+             FROM BNGRC_achat
+             WHERE id_article = :id_article"
+        );
+        $achatQuery->execute([':id_article' => $id_article]);
+        $achatResult = $achatQuery->fetch(PDO::FETCH_ASSOC);
+        $totalArgentUtilise = $achatResult['total_argent_utilise'] ?? 0;
+
+        return $totalValeurDons - $totalArgentUtilise;
+    }
 }

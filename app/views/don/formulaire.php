@@ -5,7 +5,7 @@
     </div>
 
     <div style="background: var(--white); border: 1px solid var(--border-color); padding: 40px; box-shadow: var(--shadow);">
-        <form style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" action="<?= BASE_URL ?>/don/insert" method="post">
+        <form style="display: grid; grid-template-columns: 1fr 1fr; gap: 30px;" action="<?= BASE_URL ?>don/insert" method="post">
             
             <div class="panel">
                 <h4 style="margin-bottom: 20px; color: var(--gold);"><i class="fas fa-info-circle"></i> Nature du Don</h4>
