@@ -8,8 +8,8 @@
         <h3 style="color: var(--royal-red); margin-bottom: 20px;">Simulateur de Distribution d'Aide</h3>
         <p style="margin-bottom: 30px; font-size: 0.95rem;">
             Lancez la simulation automatique pour redistribuer les dons selon les besoins et l'ordre chronologique.
-        </p>
-        
+        </p>    
+
         <div class="sim-form">
             <button class="btn-gold" onclick="simulateDistribution()"> Simuler par date</button>
             <button></button>
