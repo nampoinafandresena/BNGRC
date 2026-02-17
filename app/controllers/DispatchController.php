@@ -458,6 +458,19 @@ class DispatchController
         return $query->fetchAll(\PDO::FETCH_ASSOC);
     }
 
+    private function getAllBesoinsNonSatisfaits()
+    {
+        $query = Flight::db()->prepare(
+            "SELECT bv.* 
+             FROM BNGRC_besoin_ville bv
+             where bv.quantite_demandee > COALESCE(
+                (SELECT SUM(quantite_attribuee) FROM BNGRC_distribution WHERE id_besoin_ville = bv.id), 0
+             )
+             ORDER BY bv.date_demande ASC"
+        );
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
     
     private function getQuantiteDistribuee($idDon)
     {
@@ -482,6 +495,272 @@ class DispatchController
         $query->execute([':id_besoin' => $idBesoin]);
         $result = $query->fetch(\PDO::FETCH_ASSOC);
         return (float) ($result['total'] ?? 0);
+    }
+
+    /**
+     * Calcule pour chaque besoin non satisfait la quantité d'article encore à compléter
+     * @return array Tableau des besoins avec leur reste à compléter
+     */
+    private function getBesoinsAvecReste()
+    {
+        $query = Flight::db()->prepare(
+            "SELECT 
+                bv.id,
+                bv.id_ville,
+                bv.id_article,
+                bv.quantite_demandee,
+                COALESCE(SUM(d.quantite_attribuee), 0) as quantite_attribuee,
+                (bv.quantite_demandee - COALESCE(SUM(d.quantite_attribuee), 0)) as reste
+            FROM BNGRC_besoin_ville bv
+            LEFT JOIN BNGRC_distribution d ON d.id_besoin_ville = bv.id
+            GROUP BY bv.id
+            HAVING reste > 0
+            ORDER BY bv.date_demande ASC"
+        );
+        $query->execute();
+        return $query->fetchAll(\PDO::FETCH_ASSOC);
+    }
+
+    private function calcTotalBesoins(){
+        $besoins = $this->getAllBesoinsNonSatisfaits();
+        $total = 0;
+        foreach ($besoins as $b) {
+            $quantiteManquante = $b['quantite_demandee'] - $this->getQuantiteAttribuee($b['id']);
+            $total += max(0, $quantiteManquante);
+        }
+        return $total;
+    }
+
+    private function getTotalQuantiteDons(){
+        $tousDons = $donCollecte->readAll();
+        $total = 0;
+        foreach ($dons as $d) {
+            $total += $d['quantite_recue'];
+        }
+        return $total;
+    }
+
+
+    private function getDonsDisponiblesParArticle($idArticle)
+    {
+        $donCollecte = new DonCollecte(Flight::db());
+        $tousDons = $donCollecte->readAll();
+        $donsArticle = [];
+
+        foreach ($tousDons as $don) {
+            if ($don['id_article'] == $idArticle) {
+                $quantiteDisponible = $don['quantite_recue'] - $this->getQuantiteDistribuee($don['id']);
+                if ($quantiteDisponible > 0) {
+                    $don['quantite_disponible'] = $quantiteDisponible;
+                    $donsArticle[] = $don;
+                }
+            }
+        }
+        return $donsArticle;
+    }
+
+    private function getBesoinsNonSatisfaitsParArticle($idArticle)
+    {
+        $besoinsAvecReste = $this->getBesoinsAvecReste();
+        $besoinsArticle = [];
+
+        foreach ($besoinsAvecReste as $besoin) {
+            if ($besoin['id_article'] == $idArticle && $besoin['reste'] > 0) {
+                $besoinsArticle[] = $besoin;
+            }
+        }
+        return $besoinsArticle;
+    }
+
+    /**
+     * Calcule le total des besoins manquants pour un article
+     */
+    private function getTotalBesoinsArticle($besoinsArticle)
+    {
+        $total = 0;
+        foreach ($besoinsArticle as $besoin) {
+            $total += $besoin['reste'];
+        }
+        return $total;
+    }
+
+    // Calcule le total des dons disponibles pour un article
+ 
+    private function getTotalDonsArticle($donsArticle)
+    {
+        $total = 0;
+        foreach ($donsArticle as $don) {
+            $total += $don['quantite_disponible'];
+        }
+        return $total;
+    }
+
+    /**
+     * Calcule la distribution proportionnelle initiale (avec floor)
+     * Retourne les quantités arrondies vers le bas
+     */
+    private function calculateProportionalDistribution($besoinsArticle, $totalDons, $totalBesoins)
+    {
+        $distribution = [];
+
+        foreach ($besoinsArticle as $besoin) {
+            $proportion = ($besoin['reste'] / $totalBesoins);
+            $quantiteProportionnelle = $proportion * $totalDons;
+            $quantiteFloor = (int) floor($quantiteProportionnelle);
+            $decimal = $quantiteProportionnelle - $quantiteFloor;
+
+            $distribution[$besoin['id']] = [
+                'id_besoin' => $besoin['id'],
+                'id_ville' => $besoin['id_ville'],
+                'id_article' => $besoin['id_article'],
+                'reste_besoin' => $besoin['reste'],
+                'quantite_floor' => $quantiteFloor,
+                'quantite_proportionnelle' => $quantiteProportionnelle,
+                'decimal' => $decimal,
+                'quantite_finale' => $quantiteFloor
+            ];
+        }
+
+        return $distribution;
+    }
+
+    //Calcule le reste total à distribuer après le floor
+    private function calculateTotalRemainder($distribution)
+    {
+        $totalFloor = 0;
+        foreach ($distribution as $item) {
+            $totalFloor += $item['quantite_floor'];
+        }
+        return $totalFloor;
+    }
+
+    /**
+     * Distribue les restes selon les décimales les plus grandes
+     * Les besoins avec les + grandes décimales reçoivent +1
+     */
+    private function distributeRemaindersByDecimals(&$distribution, $donsTotalDisponibles)
+    {
+        $totalFloor = $this->calculateTotalRemainder($distribution);
+        $reste = $donsTotalDisponibles - $totalFloor;
+
+        if ($reste <= 0) {
+            return;
+        }
+
+        // Trier par décimales décroissantes (les + grandes en premier)
+        $sorted = $distribution;
+        uasort($sorted, function($a, $b) {
+            return $b['decimal'] <=> $a['decimal'];
+        });
+
+        $count = 0;
+        foreach ($sorted as $id => $item) {
+            if ($count >= $reste) {
+                break;
+            }
+
+            // Ajouter 1 à la quantité finale si décimale > 0
+            if ($item['decimal'] > 0) {
+                $distribution[$id]['quantite_finale'] += 1;
+                $count++;
+            }
+        }
+    }
+
+    /**
+     * Crée les propositions à partir de la distribution finale
+     */
+    private function createPropositionsFromDistribution($distribution, $donsArticle, &$stats)
+    {
+        $propositions = [];
+
+        foreach ($distribution as $idBesoin => $distrib) {
+            $quantiteAAttribuer = $distrib['quantite_finale'];
+
+            if ($quantiteAAttribuer <= 0) {
+                continue;
+            }
+
+            // Attribuer à partir des dons disponibles
+            $quantiteRestante = $quantiteAAttribuer;
+
+            foreach ($donsArticle as &$don) {
+                if ($quantiteRestante <= 0) {
+                    break;
+                }
+
+                if ($don['quantite_disponible'] <= 0) {
+                    continue;
+                }
+
+                $quantitePrise = min($don['quantite_disponible'], $quantiteRestante);
+
+                $propositions[] = [
+                    'id_don' => $don['id'],
+                    'id_article' => $distrib['id_article'],
+                    'id_besoin_ville' => $distrib['id_besoin'],
+                    'id_ville' => $distrib['id_ville'],
+                    'quantite_attribuee' => $quantitePrise,
+                    'donateur' => $don['donateur']
+                ];
+
+                $don['quantite_disponible'] -= $quantitePrise;
+                $quantiteRestante -= $quantitePrise;
+                $stats['attributions_proposees']++;
+                $stats['quantite_totale_proposee'] += $quantitePrise;
+            }
+        }
+
+        return $propositions;
+    }
+
+    public function simulateDispatchProportion()
+    {
+        $propositions = [];
+        $stats = [
+            'dons_traites' => 0,
+            'attributions_proposees' => 0,
+            'quantite_totale_proposee' => 0
+        ];
+
+        // Récupérer tous les articles
+        $query = Flight::db()->prepare("SELECT DISTINCT id FROM BNGRC_article ORDER BY id");
+        $query->execute();
+        $articles = $query->fetchAll(\PDO::FETCH_ASSOC);
+
+        // Traiter chaque article indépendamment
+        foreach ($articles as $article) {
+            $idArticle = $article['id'];
+            $donsArticle = $this->getDonsDisponiblesParArticle($idArticle);
+            $besoinsArticle = $this->getBesoinsNonSatisfaitsParArticle($idArticle);
+
+            // Vérifier qu'il y a des dons ET des besoins pour cet article
+            if (empty($donsArticle) || empty($besoinsArticle)) {
+                continue;
+            }
+
+            $totalDons = $this->getTotalDonsArticle($donsArticle);
+            $totalBesoins = $this->getTotalBesoinsArticle($besoinsArticle);
+
+            // ÉTAPE 1 : Calcul proportionnel initial (avec floor)
+            $distribution = $this->calculateProportionalDistribution($besoinsArticle, $totalDons, $totalBesoins);
+
+            // ÉTAPE 2 & 3 : Distribuer les restes selon les plus grandes décimales
+            $this->distributeRemaindersByDecimals($distribution, $totalDons);
+
+            // Créer les propositions finales
+            $propositionsArticle = $this->createPropositionsFromDistribution($distribution, $donsArticle, $stats);
+            $propositions = array_merge($propositions, $propositionsArticle);
+
+            if (!empty($propositionsArticle)) {
+                $stats['dons_traites']++;
+            }
+        }
+
+        return [
+            'propositions' => $propositions,
+            'stats' => $stats
+        ];
     }
 }
 ?>
