@@ -211,17 +211,26 @@ class Achat
     }
 
     // get tous les achats avec les tous les details 
-    public static function getAllWithDetails($db)
-    {
-        $query = $db->prepare("
-            SELECT a.*, v.nom_ville, art.nom_article 
-            FROM BNGRC_achat a
-            LEFT JOIN BNGRC_ville v ON a.id_ville = v.id
-            LEFT JOIN BNGRC_article art ON a.id_article = art.id
-            ORDER BY a.date_achat DESC
-        ");
-        $query->execute();
-        return $query->fetchAll(PDO::FETCH_ASSOC);
+    public static function getAllWithDetails($db, $id_ville = null) {
+        $sql = "SELECT ac.*, v.nom as nom_ville, a.label as nom_article, a.prix_unitaire 
+                FROM BNGRC_achat ac
+                JOIN BNGRC_ville v ON ac.id_ville = v.id
+                JOIN BNGRC_article a ON ac.id_article = a.id";
+        
+        if ($id_ville) {
+            $sql .= " WHERE ac.id_ville = :id_ville";
+        }
+        
+        $sql .= " ORDER BY ac.date_achat DESC";
+        
+        $stmt = $db->prepare($sql);
+        if ($id_ville) {
+            $stmt->execute(['id_ville' => $id_ville]);
+        } else {
+            $stmt->execute();
+        }
+        
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
 
     // statistiques des achats

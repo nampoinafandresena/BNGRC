@@ -25,6 +25,7 @@
             <li><a href="<?= BASE_URL ?>don/formulaire">Saisie de Don </a></li>
             <li><a href="<?= BASE_URL ?>besoin/formulaire">Formuler un besoin</a></li>
             <li><a href="<?= BASE_URL ?>recap">Recapitulation</a></li>
+            <li><a href="<?= BASE_URL ?>achat/liste">Liste des achats</a></li>
           </ul>
       </nav>
   </header>

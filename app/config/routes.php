@@ -44,6 +44,8 @@ $router->group('', function(Router $router) use ($app) {
 	$router->group('/achat', function($router) use ($app) {
 		$router->get('/formulaire', [AchatController::class, 'afficherFormulaire']);	
 		$router->post('/valider', [AchatController::class, 'validerAchat']);
+		$router->get('/liste', [AchatController::class, 'listeAchats']);
+		// $router->get('/liste/@id_ville', [AchatController::class, 'listeAchats']);
 	});
 
 	$router->group('/don', function() use ($router) {

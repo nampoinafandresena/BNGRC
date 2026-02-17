@@ -170,7 +170,7 @@ class AchatController {
         // --- RÈGLE DE GESTION 2 : Calcul du montant avec frais ---
         // 0.1
         $fraisPourcent = $this->getFraisConfig();
-    $montantHT = (float)$data->quantite * (float)$data->prix_unitaire;
+        $montantHT = (float)$data->quantite * (float)$data->prix_unitaire;
         $montantTotal = $montantHT * (1 + ($fraisPourcent));
 
         // On prépare les données pour le modèle Achat
@@ -189,6 +189,27 @@ class AchatController {
         } else {
             Flight::halt(500, "Erreur lors de l'enregistrement de l'achat.");
         }
+    }
+
+    public function listeAchats() {
+        $db = Flight::db();
+
+        $id_ville = Flight::request()->query->id_ville;
+        if($id_ville == "") { $id_ville = null; }
+        
+        // 1. Récupérer la liste des achats (filtrée ou non)
+        $achats = Achat::getAllWithDetails($db, $id_ville);
+        
+        // 2. Récupérer la liste des villes pour le menu déroulant du filtre
+        $stmtVilles = $db->query("SELECT * FROM BNGRC_ville ORDER BY nom");
+        $villes = $stmtVilles->fetchAll(\PDO::FETCH_ASSOC);
+
+        Flight::render('model', [
+            'page' => 'achat/liste',
+            'achats' => $achats,
+            'villes' => $villes,
+            'id_ville_selectionnee' => $id_ville
+        ]);
     }
 
 }
