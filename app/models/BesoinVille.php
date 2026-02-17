@@ -183,7 +183,40 @@ class BesoinVille
         return $this->quantite_demandee - $this->getQuantiteDistribuee();
     }
 
+    /**
+     * État global des villes avec distributions des DONS
+     * Affiche la quantité distribuée depuis la table BNGRC_distribution
+     */
     public function getEtatGlobalVilles() {
+        $sql = "SELECT 
+                        V.id as id_ville,
+                        V.nom AS ville_nom, 
+                        R.nom AS region_nom,
+                        A.id AS id_article,
+                        A.label AS article_label, 
+                        A.prix_unitaire,
+                        BV.quantite_demandee,
+                        COALESCE(SUM(D.quantite_attribuee), 0) AS quantite_recue,
+                        (BV.quantite_demandee - COALESCE(SUM(D.quantite_attribuee), 0)) AS reste
+                    FROM BNGRC_besoin_ville BV
+                    JOIN BNGRC_ville V ON BV.id_ville = V.id
+                    JOIN BNGRC_region R ON V.id_region = R.id
+                    JOIN BNGRC_article A ON BV.id_article = A.id
+                    LEFT JOIN BNGRC_distribution D ON D.id_besoin_ville = BV.id
+                    GROUP BY BV.id, V.nom, R.nom, A.label, A.prix_unitaire, BV.quantite_demandee
+                    ORDER BY R.nom, V.nom ASC;";
+
+        $stmt = $this->db->prepare($sql);
+        $stmt->execute();
+        return $stmt->fetchAll(PDO::FETCH_ASSOC);
+    }
+
+    /**
+     * État global des villes avec ACHATS
+     * Affiche la quantité achetée depuis la table BNGRC_achat
+     * (À utiliser si on veut suivre les achats et non les distributions)
+     */
+    public function getEtatGlobalVillesAvecAchats() {
         $sql = "SELECT 
                         V.id as id_ville,
                         V.nom AS ville_nom, 
