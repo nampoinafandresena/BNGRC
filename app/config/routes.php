@@ -27,7 +27,7 @@ $router->group('', function(Router $router) use ($app) {
 			'page' => 'index' ,
 			'stats' => $dashboardController->getEtatGlobalVilles()
 		]);
-	});
+	});		
 
 	$router->get('/hello-world/@name', function($name) {
 		echo '<h1>Hello world! Oh hey '.$name.'!</h1>';

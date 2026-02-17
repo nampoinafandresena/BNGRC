@@ -121,7 +121,7 @@
 
     function resetDispatch() {
         if (confirm('Êtes-vous sûr de vouloir réinitialiser toutes les distributions? Cette action est irréversible.')) {
-            fetch('/dispatch/reset', { method: 'POST' })
+            fetch('<?= BASE_URL ?>/dispatch/reset', { method: 'POST' })
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
@@ -142,7 +142,7 @@
     // ========================================================
     
     function loadDons() {
-        fetch('/api/dons')
+        fetch('<?= BASE_URL ?>/api/dons')
             .then(response => response.json())
             .then(dons => {
                 const tableBody = document.getElementById('donsTableBody');

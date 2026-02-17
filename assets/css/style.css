@@ -106,3 +106,127 @@ footer {
     background: var(--dark-grey); color: white;
     padding: 40px 20px; text-align: center; border-top: 3px solid var(--gold);
 }
+
+
+
+/* --- CHARTE GRAPHIQUE BNGRC --- */
+:root {
+    --royal-red: #8a1c1c;       /* Rouge Institutionnel */
+    --gold: #c5a059;            /* Doré Prestige */
+    --dark-grey: #2c2c2c;       /* Texte et En-têtes */
+    --paper-bg: #f9f7f2;        /* Fond de page chaud */
+    --white: #ffffff;
+}
+
+body {
+    background-color: var(--paper-bg);
+    color: var(--dark-grey);
+    font-family: 'Lato', sans-serif;
+}
+
+h1, h2, h3, h4 {
+    font-family: 'Playfair Display', serif;
+}
+
+/* --- CONTENEUR ET TITRES --- */
+.container { max-width: 1300px; margin: 0 auto; padding: 40px 20px; }
+
+.section-title {
+    text-align: center;
+    margin-bottom: 50px;
+}
+.section-title h2 { font-size: 2.5rem; color: var(--royal-red); }
+.section-title::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 3px;
+    background: var(--gold);
+    margin: 20px auto 0;
+}
+
+/* --- BLOC VILLE (CITY BLOCK) --- */
+.city-grid { display: grid; grid-template-columns: 1fr; gap: 40px; }
+
+.city-block {
+    background: var(--white);
+    border: 1px solid #e5e5e5;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+    margin-bottom: 30px;
+}
+
+.city-header {
+    background: var(--dark-grey);
+    color: var(--white);
+    padding: 20px 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-left: 5px solid var(--gold);
+}
+
+.city-content { 
+    padding: 30px; 
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 40px; 
+}
+
+@media (max-width: 900px) { .city-content { grid-template-columns: 1fr; } }
+
+/* --- PANNEAUX ET TABLEAUX --- */
+.panel h4 { 
+    color: var(--royal-red); 
+    border-bottom: 1px solid #ddd; 
+    padding-bottom: 10px; 
+    margin-bottom: 20px;
+    text-transform: uppercase;
+    font-size: 0.9rem;
+}
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th { text-align: left; padding: 12px; background: #f4f4f4; color: #555; font-size: 0.75rem; text-transform: uppercase; }
+td { padding: 12px; border-bottom: 1px solid #eee; }
+
+/* --- BADGES DE STATUT --- */
+.status-badge { 
+    padding: 5px 12px; 
+    border-radius: 4px; 
+    font-size: 0.7rem; 
+    font-weight: 700; 
+    text-transform: uppercase;
+}
+.status-badge.critical { background: var(--royal-red); color: white; }
+.status-badge.delivered { background: #16a34a; color: white; }
+.status-badge.transit { background: #d97706; color: white; }
+
+/* --- SIMULATEUR --- */
+.donation-sim-box {
+    background: var(--white);
+    border: 2px solid var(--gold);
+    padding: 40px;
+    margin-bottom: 50px;
+    text-align: center;
+}
+
+.sim-form { display: flex; gap: 15px; justify-content: center; flex-wrap: wrap; }
+.sim-input { padding: 10px; border: 1px solid #ccc; width: 200px; }
+
+.btn-gold {
+    background: var(--gold);
+    color: white;
+    padding: 10px 25px;
+    border: none;
+    font-weight: 700;
+    text-transform: uppercase;
+    cursor: pointer;
+}
+
+.sim-result {
+    display: none; 
+    text-align: left;
+    margin-top: 30px;
+    background: var(--paper-bg);
+    padding: 20px;
+    border-left: 4px solid var(--royal-red);
+}

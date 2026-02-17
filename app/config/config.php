@@ -49,8 +49,8 @@ define('PROJECT_ROOT', __DIR__ . '/../..');
 $app->path(PROJECT_ROOT);
 
 // Core config variables
-// $app->set('flight.base_url', '/ETU004025/BNGRC',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
-$app->set('flight.base_url', '/',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
+$app->set('flight.base_url', '/ETU004025/BNGRC',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
+// $app->set('flight.base_url', '/',);           // Base URL for your app. Change if app is in a subdirectory (e.g., '/myapp/')
 $app->set('flight.case_sensitive', false);    // Set true for case sensitive routes. Default: false
 $app->set('flight.log_errors', true);         // Log errors to file. Recommended: true in production
 $app->set('flight.handle_errors', false);     // Let Tracy handle errors if false. Set true to use Flight's error handler
@@ -83,8 +83,8 @@ return [
 	],
 
 	// 'database' => [
-	// 	'host'     => '172.16.7.108',      // Database host (e.g., 'localhost', 'db.example.com')
-	// 	'dbname'   => 'BNGRC',   // Database name (e.g., 'flightphp')
+	// 	'host'     => 'localhost',      // Database host (e.g., 'localhost', 'db.example.com')
+	// 	'dbname'   => 'db_s2_ETU004025',   // Database name (e.g., 'flightphp')
 	// 	'user'     => 'ETU004025',  // Database user (e.g., 'root')
 	// 	'password' => 'L1KjQvJE',  // Database password (never commit real passwords)
 		

@@ -1,4 +1,7 @@
 <?php
+// echo "BOOTSTRAP OK";
+// die();
+
 
 /*
  * This is the file called bootstrap who's job is to make sure that all the
@@ -21,7 +24,10 @@ $app = Flight::app();
  * P.S. When you require a php file and that file returns an array, the array
  * will be returned by the require statement where you can assign it to a var.
  */
-$config = require('config.php');
+
+// $config = require('config.php');
+$config = require(__DIR__ . $ds . 'config.php');
+
 
 /*
  * Load the services file.
@@ -38,7 +44,9 @@ $config = require('config.php');
  * That's a discussion for another day. Suffice to say, that Flight has a basic concept
  * of a services container by registering classes to the Engine class.
  */ 
-require('services.php');
+
+// require('services.php');
+require(__DIR__ . $ds . 'services.php');
 
 // Whip out the ol' router and we'll pass that to the routes file
 $router = $app->router();
@@ -50,13 +58,15 @@ $router = $app->router();
  * When someone hits that URL, you point them to a function or method 
  * that will handle the request.
  */
-require('routes.php');
+
+// require('routes.php');
+require(__DIR__ . $ds . 'routes.php');
 
 // At this point, your app should have all the instructions it needs and it'll
 // "start" processing everything. This is where the magic happens.
 
-define('BASE_URL', '/');
-// define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/ETU003902/livraison/'));
+// define('BASE_URL', '/ETU004025/BNGRC');
+define('BASE_URL', rtrim(dirname($_SERVER['SCRIPT_NAME']), '/'));
 
 $app->start();
 /*
