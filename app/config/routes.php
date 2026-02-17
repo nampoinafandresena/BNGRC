@@ -131,6 +131,54 @@ $router->group('', function(Router $router) use ($app) {
             header('Content-Type: application/json');
             echo json_encode($result);
         });
+
+		// routes proportion
+        $router->get('/preview-proportion', function() {
+            $app = Flight::app();
+            $dispatchController = new DispatchController($app);
+            $result = $dispatchController->simulateDispatchProportion();
+            // Récupérer l'état simulé
+            $simulatedStats = $dispatchController->getSimulatedState($result['propositions']);
+            header('Content-Type: application/json');
+            echo json_encode([
+                'propositions' => $result['propositions'],
+                'stats' => $result['stats'],
+                'simulated_state' => $simulatedStats
+            ]);
+        });
+
+        $router->post('/validate-proportion', function() {
+            $app = Flight::app();
+            $dispatchController = new DispatchController($app);
+            $result = $dispatchController->simulateDispatchProportion();
+            $propositions = $result['propositions'];
+            
+            $validationResult = [
+                'success' => false,
+                'attributions_creees' => 0,
+                'quantite_totale_attribuee' => 0,
+                'erreurs' => []
+            ];
+
+            foreach ($propositions as $prop) {
+                $distribution = new \app\models\Distribution($app->db());
+                $distribution
+                    ->setIdDon($prop['id_don'])
+                    ->setIdBesoinVille($prop['id_besoin_ville'])
+                    ->setQuantiteAttribuee($prop['quantite_attribuee']);
+
+                if ($distribution->create()) {
+                    $validationResult['attributions_creees']++;
+                    $validationResult['quantite_totale_attribuee'] += $prop['quantite_attribuee'];
+                } else {
+                    $validationResult['erreurs'][] = "Erreur création don #{$prop['id_don']}";
+                }
+            }
+
+            $validationResult['success'] = count($validationResult['erreurs']) === 0;
+            header('Content-Type: application/json');
+            echo json_encode($validationResult);
+        });
 	});
 	
 }, [ SecurityHeadersMiddleware::class ]);

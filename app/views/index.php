@@ -5,7 +5,7 @@
     </div>
 
     <div class="donation-sim-box">
-        <h3 style="color: var(--royal-red); margin-bottom: 20px;">🎁 Suivi des Dons en Temps Réel</h3>
+        <h3 style="color: var(--royal-red); margin-bottom: 20px;">Suivi des Dons en Temps Réel</h3>
         <table style="width: 100%; border-collapse: collapse; margin-bottom: 20px;">
             <thead>
                 <tr style="background-color: #f0f8ff;">
@@ -34,6 +34,7 @@
         <div class="sim-form">
             <button class="btn-gold" onclick="simulateDistribution('date')">📅 Simuler par date</button>
             <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">⚡ Simuler par min</button>
+            <button class="btn-gold" onclick="simulateDistribution('proportion')" style="background: #dfbf8eff;">📊 Simuler proportionnellement</button>
             <button class="btn-gold" onclick="resetDispatch()"> Réinitialiser distributions</button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
@@ -174,26 +175,7 @@
     // Recharger les dons toutes les 5 secondes pour voir les changements en temps réel
     setInterval(loadDons, 5000);
 
-    /*
-     * ========================================================
-     * LOGIQUE DE SIMULATION ET VALIDATION DES DISTRIBUTIONS
-     * ========================================================
-     * 
-     * ANCIEN COMPORTEMENT (COMMENTÉ) :
-     * - Route unique : /dispatch/simulate
-     * - Sauvegardait directement les distributions
-     * - Rafraîchissait la page après 2 secondes automatiquement
-     * Inconvénient : pas de contrôle utilisateur, pas de preview
-     * 
-     * NOUVEAU COMPORTEMENT :
-     * - Deux routes séparées : /dispatch/preview et /dispatch/validate
-     * - /preview : affiche les propositions (sans sauvegarder)
-     * - Utilisateur peut voir le résultat et décider
-     * - Si validation : /validate persiste les données
-     * - Boutons : Simuler, Valider, Annuler
-     * ========================================================
-     */
-    
+
     let currentProposals = []; // Stocke les propositions actuelles
 
     
@@ -245,7 +227,20 @@
         simContent.innerHTML = '<p style="text-align: center;">⏳ Simulation en cours...</p>';
         resultBox.style.display = 'block';
         
-        const endpoint = type === 'minimum' ? '/dispatch/preview-minimum' : '/dispatch/preview';
+        var endpoint;
+        switch(type) {
+            case "minimum":
+                endpoint = '/dispatch/preview-minimum';
+                break;
+            case "date":
+                endpoint = '/dispatch/preview';
+                break;
+            case "proportion":
+                endpoint = '/dispatch/preview-proportion';
+                break;
+            default:
+                endpoint = '/dispatch/preview';
+        }
         
         fetch(endpoint)
         .then(response => response.json())
@@ -258,9 +253,18 @@
                 applySimulatedState(data.simulated_state);
             }
             
+            var typeLabel;
+            if (type === 'minimum') {
+                typeLabel = 'Priorité minimale';
+            } else if (type === 'proportion') {
+                typeLabel = 'Distribution proportionnelle';
+            } else {
+                typeLabel = 'Par date';
+            }
+            
             let statsHtml = `
             <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
-            <p><strong>📊 Propositions de Distribution (${type === 'minimum' ? 'Priorité minimale' : 'Par date'})</strong></p>
+            <p><strong>📊 Propositions de Distribution (${typeLabel})</strong></p>
             <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
             <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
             <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
@@ -318,7 +322,14 @@
         validateBtn.disabled = true;
         simContent.innerHTML = '<p style="text-align: center;">⏳ Validation en cours...</p>';
         
-        const endpoint = currentSimulationType === 'minimum' ? '/dispatch/validate-minimum' : '/dispatch/validate';
+        var endpoint;
+        if (currentSimulationType === 'minimum') {
+            endpoint = '/dispatch/validate-minimum';
+        } else if (currentSimulationType === 'proportion') {
+            endpoint = '/dispatch/validate-proportion';
+        } else {
+            endpoint = '/dispatch/validate';
+        }
         
         fetch(endpoint, {
             method: 'POST',
