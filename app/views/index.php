@@ -32,9 +32,9 @@
         </p>
         
         <div class="sim-form">
-            <button class="btn-gold" onclick="simulateDistribution('date')">📅 Simuler par date</button>
-            <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">⚡ Simuler par min</button>
-            <button class="btn-gold" onclick="simulateDistribution('proportion')" style="background: #dfbf8eff;">📊 Simuler proportionnellement</button>
+            <button class="btn-gold" onclick="simulateDistribution('date')">༄ Simuler par date</button>
+            <button class="btn-gold" onclick="simulateDistribution('minimum')" style="background: #ff9800;">༄ Simuler par min</button>
+            <button class="btn-gold" onclick="simulateDistribution('proportion')" style="background: #dfbf8eff;">༄ Simuler proportionnellement</button>
             <button class="btn-gold" onclick="resetDispatch()"> Réinitialiser distributions</button>
             <button class="btn-gold" id="validateBtn" onclick="validateDistribution()" style="display: none; background-color: #28a745; margin-left: 10px;">✓ Valider</button>
             <button class="btn-gold" id="cancelBtn" onclick="cancelSimulation()" style="display: none; background-color: #6c757d; margin-left: 10px;">✗ Annuler</button>
@@ -230,16 +230,16 @@
         var endpoint;
         switch(type) {
             case "minimum":
-                endpoint = '/dispatch/preview-minimum';
+                endpoint = '<?= BASE_URL ?>/dispatch/preview-minimum';
                 break;
             case "date":
-                endpoint = '/dispatch/preview';
+                endpoint = '<?= BASE_URL ?>/dispatch/preview';
                 break;
             case "proportion":
-                endpoint = '/dispatch/preview-proportion';
+                endpoint = '<?= BASE_URL ?>/dispatch/preview-proportion';
                 break;
             default:
-                endpoint = '/dispatch/preview';
+                endpoint = '<?= BASE_URL ?>/dispatch/preview';
         }
         
         fetch(endpoint)
@@ -324,11 +324,11 @@
         
         var endpoint;
         if (currentSimulationType === 'minimum') {
-            endpoint = '/dispatch/validate-minimum';
+            endpoint = '<?= BASE_URL ?>/dispatch/validate-minimum';
         } else if (currentSimulationType === 'proportion') {
-            endpoint = '/dispatch/validate-proportion';
+            endpoint = '<?= BASE_URL ?>/dispatch/validate-proportion';
         } else {
-            endpoint = '/dispatch/validate';
+            endpoint = '<?= BASE_URL ?>/dispatch/validate';
         }
         
         fetch(endpoint, {
