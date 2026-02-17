@@ -196,11 +196,7 @@
     
     let currentProposals = []; // Stocke les propositions actuelles
 
-    function simulateDistribution() {
-    let currentProposals = [];
-    let currentSimulationType = null;
-    let originalState = null;
-
+    
     // Sauvegarder l'état initial
     function saveOriginalState() {
         originalState = [];
@@ -212,7 +208,7 @@
             });
         });
     }
-
+    
     // Restaurer l'état initial
     function restoreOriginalState() {
         originalState.forEach(item => {
@@ -234,11 +230,11 @@
             }
         });
     }
-
+    
     function number_format(value) {
         return new Intl.NumberFormat('fr-FR').format(Math.round(value));
     }
-
+    
     function simulateDistribution(type) {
         saveOriginalState();
         const resultBox = document.getElementById('simResult');
@@ -252,64 +248,64 @@
         const endpoint = type === 'minimum' ? '/dispatch/preview-minimum' : '/dispatch/preview';
         
         fetch(endpoint)
-            .then(response => response.json())
-            .then(data => {
-                currentProposals = data.propositions;
-                currentSimulationType = type;
-                
-                // Appliquer l'état simulé
-                if (data.simulated_state) {
-                    applySimulatedState(data.simulated_state);
-                }
-
-                let statsHtml = `
-                    <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
-                        <p><strong>📊 Propositions de Distribution (${type === 'minimum' ? 'Priorité minimale' : 'Par date'})</strong></p>
-                        <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
-                        <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
-                        <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
-                    </div>
+        .then(response => response.json())
+        .then(data => {
+            currentProposals = data.propositions;
+            currentSimulationType = type;
+            
+            // Appliquer l'état simulé
+            if (data.simulated_state) {
+                applySimulatedState(data.simulated_state);
+            }
+            
+            let statsHtml = `
+            <div style="padding: 15px; background: #f0f8ff; border-radius: 5px; border-left: 4px solid var(--royal-red); margin-bottom: 20px;">
+            <p><strong>📊 Propositions de Distribution (${type === 'minimum' ? 'Priorité minimale' : 'Par date'})</strong></p>
+            <p>Dons traités: <strong>${data.stats.dons_traites}</strong></p>
+            <p>Attributions proposées: <strong>${data.stats.attributions_proposees}</strong></p>
+            <p>Quantité totale proposée: <strong>${data.stats.quantite_totale_proposee}</strong></p>
+            </div>
+            `;
+            
+            if (data.propositions.length > 0) {
+                statsHtml += `
+                <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <thead>
+                <tr style="background-color: #f0f8ff;">
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Don</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Quantité</th>
+                <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Destination</th>
+                </tr>
+                </thead>
+                <tbody>
+                ${data.propositions.map(prop => `
+                <tr>
+                <td style="border: 1px solid #ddd; padding: 10px;">#${prop.id_don}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.donateur}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.article_label}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.quantite_attribuee}</td>
+                <td style="border: 1px solid #ddd; padding: 10px;">${prop.ville_nom}</td>
+                </tr>
+                `).join('')}
+                </tbody>
+                </table>
                 `;
-                
-                if (data.propositions.length > 0) {
-                    statsHtml += `
-                        <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
-                            <thead>
-                                <tr style="background-color: #f0f8ff;">
-                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Don</th>
-                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Donateur</th>
-                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Article</th>
-                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Quantité</th>
-                                    <th style="border: 1px solid #ddd; padding: 10px; text-align: left;">Destination</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.propositions.map(prop => `
-                                    <tr>
-                                        <td style="border: 1px solid #ddd; padding: 10px;">#${prop.id_don}</td>
-                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.donateur}</td>
-                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.article_label}</td>
-                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.quantite_attribuee}</td>
-                                        <td style="border: 1px solid #ddd; padding: 10px;">${prop.ville_nom}</td>
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                    `;
-                } else {
-                    statsHtml += '<p style="color: var(--royal-red);">ℹ️ Aucune proposition disponible.</p>';
-                }
-                
-                simContent.innerHTML = statsHtml;
-                validateBtn.style.display = 'inline-block';
-                cancelBtn.style.display = 'inline-block';
-                resultBox.scrollIntoView({ behavior: 'smooth' });
-            })
-            .catch(error => {
-                simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
-            });
+            } else {
+                statsHtml += '<p style="color: var(--royal-red);">ℹ️ Aucune proposition disponible.</p>';
+            }
+            
+            simContent.innerHTML = statsHtml;
+            validateBtn.style.display = 'inline-block';
+            cancelBtn.style.display = 'inline-block';
+            resultBox.scrollIntoView({ behavior: 'smooth' });
+        })
+        .catch(error => {
+            simContent.innerHTML = '<p style="color: var(--royal-red);">❌ Erreur: ' + error.message + '</p>';
+        });
     }
-
+    
     function validateDistribution() {
         if (currentProposals.length === 0) {
             alert('Aucune proposition à valider.');
