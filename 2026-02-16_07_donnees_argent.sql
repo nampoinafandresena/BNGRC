@@ -42,10 +42,10 @@ SELECT
 FROM BNGRC_besoin_ville BV
 JOIN BNGRC_article A ON BV.id_article = A.id;
 
-Fonctions à créer :
+-- Fonctions à créer :
 
-getFraisConfig() : Récupère la valeur dans BNGRC_config.
+-- getFraisConfig() : Récupère la valeur dans BNGRC_config.
 
-getDonRestant(id_article) : Calcule (Dons reçus - Distributions faites) pour un article précis.
+-- getDonRestant(id_article) : Calcule (Dons reçus - Distributions faites) pour un article précis.
 
-saveAchat(...) : Insère la ligne d'achat.
+-- saveAchat(...) : Insère la ligne d'achat.
