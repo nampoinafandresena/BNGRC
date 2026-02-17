@@ -47,7 +47,7 @@ class BesoinController {
         $model->setIdArticle($id_article);
         $model->setQuantiteDemandee($quantite);
         $model->create();
-        Flight::redirect(BASE_URL . "/" );
+        Flight::redirect( "/" );
 
     }
 
